@@ -1,0 +1,356 @@
+// --- LÓGICA PRINCIPAL DEL JUEGO ---
+
+// Nuevas variables para el temporizador por pregunta
+let questionTimer = null;
+let currentQuestionTimeLeft = 0;
+
+
+function startContest(mode) {
+    gameMode = mode;
+    score = 0;
+    errors = 0;
+    totalTimeElapsed = 0; 
+    
+    rightInfoDisplay.classList.remove('time-warning');
+    rightInfoDisplay.style.display = 'inline'; 
+    centerTimeDisplay.style.display = 'none'; 
+    
+    gameContainer.classList.remove('game-content-hidden'); 
+    stopFreeModeTimer();
+    // Detener temporizador de pregunta si estaba activo
+    stopQuestionTimer(); 
+    
+    modeSelectionModal.style.display = 'none'; 
+    timeSelectionModal.style.display = 'none';
+    playerNameModal.style.display = 'none';
+    rankingModal.style.display = 'none';
+    
+    stopBGM();
+
+    playSound(startSound);
+    gameStarted = true; 
+    mainMenuButton.style.display = 'block'; 
+
+    if (gameMode === 'chrono') {
+         gameTitleEl.textContent = 'Modo Contrarreloj';
+         timeLeft = initialTime;
+         rightInfoDisplay.textContent = `Tiempo: ${timeLeft}s`;
+         if (nextQuestionButton) nextQuestionButton.style.display = 'none';
+         startChronoTimer();
+         playBGM('2.mp3'); 
+    } else if (gameMode === 'sudden_death') {
+         gameTitleEl.textContent = 'Muerte Súbita';
+         startTime = Date.now(); 
+         rightInfoDisplay.textContent = `Tiempo: 0s`; // Muestra el tiempo total transcurrido
+         centerTimeDisplay.style.display = 'block'; // Muestra el tiempo por pregunta
+         if (nextQuestionButton) nextQuestionButton.style.display = 'none';
+         startSuddenDeathTimer(); // Temporizador que mide el tiempo total de la partida
+         playBGM('3.mp3');
+    } else { // free
+         gameTitleEl.textContent = 'Práctica Libre';
+         rightInfoDisplay.textContent = `Errores: ${errors}`;
+         if (nextQuestionButton) nextQuestionButton.style.display = 'none'; 
+         startFreeModeTimer(); 
+         playBGM('1.mp3');
+    }
+    
+    scoreDisplay.textContent = `Puntuación: ${score}`;
+    generateNewQuestion();
+    enableOptions(true);
+}
+
+function handleAnswer(event) {
+    if (!gameStarted) return; 
+    
+    const selectedButton = event.currentTarget;
+    const selectedAnswer = parseInt(selectedButton.value);
+
+    enableOptions(false);
+    
+    // Parar temporizador de pregunta al contestar en Muerte Súbita
+    if (gameMode === 'sudden_death') {
+        stopQuestionTimer();
+    }
+    
+    if (gameMode === 'free') {
+         if (freeModeTimerInterval) clearInterval(freeModeTimerInterval);
+         if (freeModeTimerStartTime > 0) {
+            totalTimeElapsed += (Date.now() - freeModeTimerStartTime) / 1000;
+         }
+    }
+
+    if (selectedAnswer === correctAnswer) {
+        score++;
+        playSound(aciertoSound); 
+        updateFeedback('¡Correcto!', true);
+        
+        if (gameMode === 'chrono' || gameMode === 'sudden_death') {
+            autoAdvanceTimeout = setTimeout(() => {
+                if (gameStarted) { 
+                    resetOptionStyles();
+                    feedbackMessage.style.opacity = '0';
+                    generateNewQuestion();
+                    enableOptions(true);
+                }
+            }, 500); 
+        } else {
+            if (nextQuestionButton) nextQuestionButton.style.display = 'block';
+        }
+
+    } else {
+        errors++;
+        playSound(errorSound);
+        updateFeedback('Incorrecto.', false); 
+        const correctBtn = optionButtons.find(btn => parseInt(btn.value) === correctAnswer);
+        if (correctBtn) correctBtn.classList.add('correct-answer');
+        
+        selectedButton.classList.add('incorrect-choice');
+        
+        if (gameMode === 'sudden_death') {
+             // Termina el juego inmediatamente por error.
+             if (timerInterval) clearInterval(timerInterval); 
+             setTimeout(() => endGame(true), 1500); 
+             return; 
+        }
+        
+        if (gameMode === 'chrono') {
+            autoAdvanceTimeout = setTimeout(() => {
+                if (gameStarted) { 
+                    resetOptionStyles();
+                    feedbackMessage.style.opacity = '0';
+                    generateNewQuestion();
+                    enableOptions(true);
+                }
+            }, 500); 
+        }
+        
+        if (gameMode === 'free') {
+            rightInfoDisplay.textContent = `Errores: ${errors}`; 
+            if (nextQuestionButton) nextQuestionButton.style.display = 'block';
+        }
+    }
+
+    selectedButton.classList.add(selectedAnswer === correctAnswer ? 'correct-answer' : 'incorrect-choice');
+    scoreDisplay.textContent = `Puntuación: ${score}`;
+    
+    if (gameMode === 'free' && !correctAnswer) { 
+        centerTimeDisplay.textContent = `Tiempo: ${formatTime(totalTimeElapsed)}`;
+    }
+}
+
+function generateNewQuestion() {
+    if (!gameStarted) return; 
+
+    if (gameMode === 'free') startFreeModeTimer(); 
+
+    // Reinicia el temporizador por pregunta si está en Muerte Súbita
+    if (gameMode === 'sudden_death') {
+        startQuestionTimer(); 
+    }
+
+    const units = [10, 100, 1000, 10000];
+    const unitNames = {
+        10: 'la decena', 100: 'la centena', 1000: 'la unidad de millar', 10000: 'la decena de millar'
+    };
+
+    const powerOfTen = units[Math.floor(Math.random() * units.length)];
+    currentUnit = unitNames[powerOfTen];
+
+    const minNum = powerOfTen * 5;
+    const maxNum = 100000;
+    currentNumber = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+
+    correctAnswer = Math.round(currentNumber / powerOfTen) * powerOfTen;
+
+    const numStr = currentNumber.toString();
+    const unitIndexFromRight = Math.log10(powerOfTen);
+    const highlightIndex = numStr.length - 1 - unitIndexFromRight;
+
+    let highlightedHtml = '';
+    for (let i = 0; i < numStr.length; i++) {
+        highlightedHtml += (i === highlightIndex) ? `<span class="highlighted-digit">${numStr[i]}</span>` : `<span>${numStr[i]}</span>`; 
+    }
+    
+    let distractors = new Set();
+    while (distractors.size < 2) {
+        let offset = (Math.floor(Math.random() * 2) * 2 - 1) * powerOfTen;
+        let newDistractor = correctAnswer + offset;
+        if (newDistractor !== correctAnswer && newDistractor > 0) distractors.add(newDistractor);
+    }
+    const allOptions = [correctAnswer, ...Array.from(distractors)];
+    allOptions.sort(() => Math.random() - 0.5);
+
+    numberToRoundEl.innerHTML = highlightedHtml; 
+    roundingUnitEl.textContent = `a ${currentUnit} más cercana.`;
+
+    optionButtons.forEach((button, index) => {
+        button.textContent = allOptions[index].toLocaleString('es-ES');
+        button.value = allOptions[index]; 
+    });
+}
+
+function endGame(isSuddenDeathError = false) {
+    gameStarted = false;
+    enableOptions(false);
+    
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if (autoAdvanceTimeout) { clearTimeout(autoAdvanceTimeout); autoAdvanceTimeout = null; }
+    stopFreeModeTimer(); 
+    stopQuestionTimer(); // Detiene el temporizador de pregunta
+    stopBGM();
+    if (isMusicOn) playBGM('fin.mp3'); 
+    
+    resetOptionStyles(); 
+    feedbackMessage.style.opacity = '0';
+    feedbackMessage.textContent = ''; 
+    numberToRoundEl.textContent = 'Juego Terminado.'; 
+    roundingUnitEl.textContent = ''; 
+    mainMenuButton.style.display = 'none'; 
+    rightInfoDisplay.style.display = 'none'; 
+    centerTimeDisplay.style.display = 'none'; 
+
+    if (gameMode === 'chrono' || gameMode === 'sudden_death') {
+         let calculationTime = (Date.now() - startTime) / 1000;
+         let endGameMessage = '';
+         
+         if (gameMode === 'chrono') {
+             endGameMessage = '¡Tiempo Agotado!';
+             calculationTime = initialTime; // Se usa el tiempo total inicial para el APS
+         } else { // sudden_death
+             if (isSuddenDeathError) {
+                 endGameMessage = '¡Error! Muerte Súbita';
+             } else {
+                 endGameMessage = '¡Tiempo de Pregunta Agotado!';
+             }
+         }
+         
+         endGameTitle.textContent = endGameMessage;
+
+         samePlayerButton.textContent = 'Reintentar (Muerte Súbita)';
+         otherPlayerButton.textContent = 'Cambiar Jugador (Muerte Súbita)';
+
+         saveScore(playerName, score, gameMode);
+         displayRanking(playerName, score, gameMode);
+         summaryApsEl.textContent = (calculationTime > 0) ? (score / calculationTime).toFixed(2) : '0.00';
+         samePlayerButton.style.display = 'block';
+         otherPlayerButton.style.display = 'block';
+    } else {
+         displayRanking(null, null, gameMode); 
+         endGameTitle.textContent = '¡Práctica Finalizada!';
+         const aps = (totalTimeElapsed > 0) ? (score / totalTimeElapsed).toFixed(2) : '0.00';
+         summaryApsEl.textContent = `(${formatTime(totalTimeElapsed)} total) Aciertos/seg: ${aps}`; 
+         samePlayerButton.style.display = 'none';
+         otherPlayerButton.style.display = 'none';
+    }
+
+    summaryTotalEl.textContent = score + errors;
+    summaryCorrectEl.textContent = score;
+    summaryIncorrectEl.textContent = errors;
+    rankingModal.style.display = 'flex';
+}
+
+// NUEVAS FUNCIONES DE TEMPORIZADOR POR PREGUNTA (MUERTE SÚBITA)
+function startQuestionTimer() {
+    // Limpia cualquier temporizador anterior
+    if (questionTimer) {
+        clearInterval(questionTimer);
+        questionTimer = null;
+    }
+    
+    // Si el límite es Infinito, no iniciamos el temporizador
+    if (suddenDeathTimeLimit === Infinity || suddenDeathTimeLimit <= 0) {
+        // MODIFICACIÓN 1: Texto para el modo "Infinito"
+        centerTimeDisplay.textContent = 'Tienes tiempo infinito.'; 
+        centerTimeDisplay.classList.remove('time-warning');
+        return; 
+    }
+    
+    currentQuestionTimeLeft = suddenDeathTimeLimit;
+    
+    // MODIFICACIÓN 2: Texto inicial del temporizador
+    centerTimeDisplay.textContent = `Tienes ${currentQuestionTimeLeft} s.`;
+    
+    questionTimer = setInterval(() => {
+        currentQuestionTimeLeft--;
+        
+        // MODIFICACIÓN 3: Texto durante la cuenta atrás
+        centerTimeDisplay.textContent = `Tienes ${currentQuestionTimeLeft} s.`;
+        
+        if (currentQuestionTimeLeft <= 5 && currentQuestionTimeLeft > 0) {
+            centerTimeDisplay.classList.add('time-warning');
+            playSound(timeWarningSound, 0.7); 
+        } else {
+            centerTimeDisplay.classList.remove('time-warning');
+        }
+
+        if (currentQuestionTimeLeft <= 0) {
+            clearInterval(questionTimer);
+            questionTimer = null;
+            handleTimeout();
+        }
+    }, 1000);
+}
+
+function stopQuestionTimer() {
+    if (questionTimer) {
+        clearInterval(questionTimer);
+        questionTimer = null;
+    }
+    centerTimeDisplay.classList.remove('time-warning');
+}
+
+
+function handleTimeout() {
+    if (gameMode === 'sudden_death') {
+        updateFeedback('¡Tiempo agotado! ⌛', false);
+        playSound(errorSound);
+        enableOptions(false);
+        // Llama a endGame con 'false' para indicar que el fin fue por tiempo agotado de la pregunta
+        endGame(false); 
+    }
+}
+
+// --- TEMPORIZADORES Y FORMATO ---
+
+function startChronoTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        rightInfoDisplay.textContent = `Tiempo: ${timeLeft}s`;
+        rightInfoDisplay.classList.toggle('time-warning', timeLeft <= 10);
+        if (timeLeft <= 0) endGame();
+    }, 1000);
+}
+
+function startSuddenDeathTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        const currentElapsed = (Date.now() - startTime) / 1000;
+        rightInfoDisplay.textContent = `Tiempo: ${formatTime(currentElapsed)}`;
+    }, 1000); 
+}
+
+function startFreeModeTimer() {
+    if (freeModeTimerInterval) clearInterval(freeModeTimerInterval);
+    centerTimeDisplay.style.display = 'inline';
+    freeModeTimerStartTime = Date.now(); 
+    centerTimeDisplay.textContent = `Tiempo: ${formatTime(totalTimeElapsed)}`;
+
+    freeModeTimerInterval = setInterval(() => {
+        totalTimeElapsed += (Date.now() - freeModeTimerStartTime) / 1000;
+        freeModeTimerStartTime = Date.now(); 
+        centerTimeDisplay.textContent = `Tiempo: ${formatTime(totalTimeElapsed)}`;
+    }, 1000); 
+}
+
+function stopFreeModeTimer() {
+    if (freeModeTimerInterval) clearInterval(freeModeTimerInterval);
+    freeModeTimerInterval = null;
+}
+
+function formatTime(totalSeconds) {
+    const seconds = Math.floor(totalSeconds);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return (seconds < 60) ? `${seconds}s` : `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
