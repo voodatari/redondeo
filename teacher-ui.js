@@ -200,7 +200,7 @@ teacherLoginButton.addEventListener('click', () => {
 
 $('logout-button').addEventListener('click', async () => {
     playSound(clickSound);
-    if (!confirm('¿Cerrar la sesión docente? El juego volverá al modo normal.')) return;
+    if (!await confirmDialog('El juego volverá al modo normal.', { title: '¿Cerrar la sesión docente?', icon: '👋', okText: 'Cerrar sesión' })) return;
     try { await teacherSignOut(); } catch (err) { console.warn(err); }
     exitTeacherMode();
     showToast('Sesión cerrada', 'info');
@@ -295,7 +295,7 @@ studentsGrid.addEventListener('click', e => {
 $('add-student-button').addEventListener('click', () => openStudentEditor(null));
 
 $('new-class-button').addEventListener('click', async () => {
-    const name = (prompt('Nombre de la nueva clase (p. ej. 5º A):') || '').trim();
+    const name = (await promptDialog('Nueva clase', '', { icon: '🏫', placeholder: 'p. ej. 5º A', okText: 'Crear clase' }) || '').trim();
     if (!name) return;
     try {
         const cls = await createClass(name.slice(0, 60));
@@ -307,7 +307,7 @@ $('new-class-button').addEventListener('click', async () => {
 $('rename-class-button').addEventListener('click', async () => {
     const cls = activeClass();
     if (!cls) return;
-    const name = (prompt('Nuevo nombre de la clase:', cls.name) || '').trim();
+    const name = (await promptDialog('Renombrar la clase', cls.name, { icon: '✏️', okText: 'Guardar' }) || '').trim();
     if (!name || name === cls.name) return;
     try {
         await renameClass(cls.id, name.slice(0, 60));
@@ -319,7 +319,7 @@ $('rename-class-button').addEventListener('click', async () => {
 $('delete-class-button').addEventListener('click', async () => {
     const cls = activeClass();
     if (!cls) return;
-    if (!confirm(`¿Borrar la clase "${cls.name}"?\n\nSe eliminarán sus alumnos, sesiones y TODAS sus partidas (también las del Multiplicador y del Redondeador). No se puede deshacer.`)) return;
+    if (!await confirmDialog('Se eliminarán sus alumnos, sesiones y TODAS sus partidas (también las del Multiplicador y del Redondeador). No se puede deshacer.', { title: `¿Borrar la clase "${cls.name}"?`, icon: '🗑️', okText: 'Borrar clase', danger: true })) return;
     try {
         await deleteClass(cls.id);
         await changeActiveClass(teacherClasses[0] ? teacherClasses[0].id : null);
@@ -394,7 +394,7 @@ $('student-save').addEventListener('click', async () => {
 
 $('student-delete').addEventListener('click', async () => {
     if (!editingStudent) return;
-    if (!confirm(`¿Eliminar a ${editingStudent.first_name} ${editingStudent.last_name}?\nTambién se borrarán todas sus partidas (en el Multiplicador y en el Redondeador).`)) return;
+    if (!await confirmDialog('También se borrarán todas sus partidas (en el Multiplicador y en el Redondeador).', { title: `¿Eliminar a ${editingStudent.first_name} ${editingStudent.last_name}?`, icon: '🗑️', okText: 'Eliminar', danger: true })) return;
     try {
         await deleteStudent(editingStudent.id);
         classStudents = classStudents.filter(s => s.id !== editingStudent.id);
@@ -552,6 +552,7 @@ async function openStudentPicker(mode) {
     pickerSessionStats = new Map();
     renderPickerGrid(true);
     openModal('student-picker-modal');
+    fitPickerGrid();
 
     if (activeSession) {
         try {
@@ -574,6 +575,51 @@ function renderPickerGrid(animate) {
         </button>`).join('') || '<div class="empty-state">Ningún alumno coincide con la búsqueda</div>';
     decoratePickerCards();
 }
+
+// Ajusta el tamaño de las tarjetas para que TODA la clase quepa en pantalla sin scroll.
+// Prueba cada número de columnas y se queda con el que permite las tarjetas más grandes.
+const PICK_MAX = 190;   // tamaño máximo de tarjeta (px)
+const PICK_MIN = 84;    // por debajo de esto no se leen los nombres: entonces sí hay scroll
+
+function pickerCardHeight(size) {
+    const font = Math.min(18, Math.max(12, size * 0.12));
+    return size * 0.85 + font * 1.2 * 2 + 4;   // relleno + foto + hueco + nombre en 2 líneas + borde
+}
+
+function fitPickerGrid() {
+    if (!isModalOpen('student-picker-modal')) return;
+    const count = Math.max(1, classStudents.length);
+    const panel = pickerGrid.closest('.panel');
+    pickerGrid.classList.remove('scrolls');
+    pickerGrid.style.gridTemplateColumns = '';
+
+    // alto libre = ventana - márgenes del modal - lo que ocupa el panel sin la cuadrícula
+    const chrome = panel.offsetHeight - pickerGrid.offsetHeight;
+    const availH = window.innerHeight - 40 - chrome - 8;
+    const availW = pickerGrid.clientWidth;
+
+    let best = null;
+    for (let cols = 1; cols <= count; cols++) {
+        // ancho = cols·s + huecos (0,09·s) + relleno lateral (0,12·s)
+        const size = Math.min(PICK_MAX, availW / (cols + 0.09 * (cols - 1) + 0.12));
+        const rows = Math.ceil(count / cols);
+        const height = rows * pickerCardHeight(size) + (rows - 1) * 0.09 * size + 0.16 * size;
+        if (height <= availH && (!best || size > best.size)) best = { cols, size };
+    }
+
+    if (!best || best.size < PICK_MIN) {
+        // la clase no cabe ni con tarjetas mínimas (pantalla muy pequeña): cuadrícula con scroll
+        // tantas columnas de tamaño mínimo como quepan, estiradas para llenar el ancho
+        const cols = Math.max(1, Math.floor(availW / (PICK_MIN * 1.09)));
+        best = { cols, size: Math.min(PICK_MAX, availW / (cols + 0.09 * (cols - 1) + 0.12)) };
+        pickerGrid.classList.add('scrolls');
+    }
+    const size = Math.floor(best.size);
+    pickerGrid.style.setProperty('--pick', size + 'px');
+    pickerGrid.style.gridTemplateColumns = `repeat(${best.cols}, ${size}px)`;
+}
+
+window.addEventListener('resize', fitPickerGrid);
 
 function decoratePickerCards() {
     pickerGrid.querySelectorAll('.student-card').forEach(card => {
@@ -943,7 +989,7 @@ $('rk-history-student').addEventListener('change', e => {
 });
 
 $('rk-new-session').addEventListener('click', async () => {
-    if (!confirm('¿Empezar una nueva sesión?\nEl ranking de la sesión empezará de cero (el ranking total de la clase se mantiene).')) return;
+    if (!await confirmDialog('El ranking de la sesión empezará de cero (el ranking total de la clase se mantiene).', { title: '¿Empezar una nueva sesión?', icon: '✨', okText: 'Nueva sesión' })) return;
     try {
         const session = await ensureActiveSession(true);
         rkSessions = await fetchSessions(activeClassId);
@@ -958,7 +1004,7 @@ $('rk-new-session').addEventListener('click', async () => {
 rkContent.addEventListener('click', async e => {
     const deleteButton = e.target.closest('[data-delete-game]');
     if (deleteButton) {
-        if (!confirm('¿Borrar esta partida? Dejará de contar en los rankings.')) return;
+        if (!await confirmDialog('Dejará de contar en los rankings.', { title: '¿Borrar esta partida?', icon: '🗑️', okText: 'Borrar', danger: true })) return;
         try {
             await deleteGame(deleteButton.dataset.deleteGame);
             const row = deleteButton.closest('tr');

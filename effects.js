@@ -140,3 +140,62 @@ function avatarHTML(student, sizeClass = '') {
     const hue = hashHue(`${s.first_name || ''}${s.last_name || ''}`);
     return `<div class="avatar avatar-initials ${sizeClass}" style="--hue:${hue}">${esc(initials)}</div>`;
 }
+
+// --- Cuadros de diálogo propios (sustituyen a confirm / prompt / alert del navegador) ---
+// Devuelven una promesa: confirmDialog → true/false, promptDialog → texto o null, alertDialog → true.
+function showDialog({ title = '', message = '', icon = '', okText = 'Aceptar', cancelText = 'Cancelar', danger = false, input = null } = {}) {
+    return new Promise(resolve => {
+        const previousFocus = document.activeElement;
+        const overlay = document.createElement('div');
+        overlay.className = 'dialog-overlay';
+        overlay.innerHTML = `
+            <div class="dialog-box" role="dialog" aria-modal="true">
+                ${icon ? `<div class="dialog-icon">${icon}</div>` : ''}
+                ${title ? `<h3 class="dialog-title">${esc(title)}</h3>` : ''}
+                ${message ? `<p class="dialog-message">${esc(message).replace(/\n/g, '<br>')}</p>` : ''}
+                ${input ? `<input type="text" class="dialog-input" maxlength="${input.maxLength || 60}" value="${esc(input.value || '')}" placeholder="${esc(input.placeholder || '')}">` : ''}
+                <div class="dialog-actions">
+                    ${cancelText ? `<button type="button" class="chip-button ghost-dark dialog-cancel">${esc(cancelText)}</button>` : ''}
+                    <button type="button" class="mode-button dialog-ok ${danger ? 'btn-sudden' : ''}">${esc(okText)}</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+
+        const field = overlay.querySelector('.dialog-input');
+        const okButton = overlay.querySelector('.dialog-ok');
+        const cancelButton = overlay.querySelector('.dialog-cancel');
+
+        const close = value => {
+            document.removeEventListener('keydown', onKey, true);
+            overlay.classList.add('dialog-out');
+            setTimeout(() => overlay.remove(), 200);
+            if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+            resolve(value);
+        };
+        const accept = () => {
+            if (field && !field.value.trim()) { restartAnimation(field, 'shake'); field.focus(); return; }
+            close(field ? field.value.trim() : true);
+        };
+        const cancel = () => close(field ? null : !cancelText);
+
+        // Escape y Enter se atienden aquí y no llegan al resto de la página
+        function onKey(e) {
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); cancel(); }
+            else if (e.key === 'Enter' && document.activeElement !== cancelButton) { e.preventDefault(); e.stopPropagation(); accept(); }
+        }
+        document.addEventListener('keydown', onKey, true);
+        okButton.addEventListener('click', () => { playSound(clickSound); accept(); });
+        if (cancelButton) cancelButton.addEventListener('click', () => { playSound(clickSound); cancel(); });
+        overlay.addEventListener('mousedown', e => { if (e.target === overlay) cancel(); });
+
+        setTimeout(() => {
+            if (field) { field.focus(); field.select(); } else okButton.focus();
+        }, 50);
+    });
+}
+
+function confirmDialog(message, options = {}) { return showDialog({ message, ...options }); }
+function promptDialog(title, value = '', options = {}) {
+    return showDialog({ title, input: { value, placeholder: options.placeholder, maxLength: options.maxLength }, ...options });
+}
+function alertDialog(message, options = {}) { return showDialog({ message, cancelText: '', ...options }); }

@@ -56,7 +56,9 @@ modeFreeButton.addEventListener('click', () => {
 
 function setPlayerName() {
     if (!playerNameInput.value.trim()) {
-        alert('Por favor, introduce tu nombre.');
+        restartAnimation(playerNameInput, 'shake');
+        showToast('Escribe tu nombre para empezar', 'warn');
+        playerNameInput.focus();
         return;
     }
     playerName = playerNameInput.value.trim().substring(0, 15);
@@ -77,12 +79,14 @@ nextQuestionButton.addEventListener('click', () => {
     enableOptions(true);
     nextQuestionButton.style.display = 'none'; 
 });
-mainMenuButton.addEventListener('click', () => {
+mainMenuButton.addEventListener('click', async () => {
     playSound(clickSound);
     if (isTeacherMode() && currentStudent && gameStarted) {
         // Práctica libre del modo docente: terminar = guardar la partida
         if (gameMode === 'free') { endGame(); return; }
-        if (!confirm('¿Abandonar la partida? El resultado no se guardará.')) return;
+        const leave = await confirmDialog('El resultado no se guardará.', { title: '¿Abandonar la partida?', icon: '🚪', okText: 'Abandonar', cancelText: 'Seguir jugando', danger: true });
+        // si la partida terminó mientras el diálogo estaba abierto, ya se muestra su resultado
+        if (!leave || !gameStarted) return;
     }
     showModeSelection(false);
 });

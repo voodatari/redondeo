@@ -96,18 +96,18 @@ function displayRanking(currentPlayerName, currentPlayerScore, mode) {
 }
 
 // --- INICIO FUNCIÓN AÑADIDA ---
-function resetRanking(mode) {
+async function resetRanking(mode) {
     if (!mode || mode === 'free') return;
 
     const modeName = mode === 'chrono' ? 'Contrarreloj' : 'Muerte Súbita';
-    if (confirm(`¿Estás seguro de que quieres borrar el ranking del modo ${modeName}?`)) {
+    if (await confirmDialog('Se borrarán todas las puntuaciones guardadas en este dispositivo.', { title: `¿Borrar el ranking de ${modeName}?`, icon: '🗑️', okText: 'Borrar', danger: true })) {
         try {
             const rankingKey = `redondeoRanking_${mode}`;
             localStorage.removeItem(rankingKey);
             displayRanking(null, null, mode);
         } catch (e) {
             console.error(`Error reseteando el ranking para el modo ${mode}:`, e);
-            alert('No se pudo resetear el ranking.');
+            showToast('No se pudo borrar el ranking.', 'error');
         }
     }
 }
