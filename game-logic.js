@@ -3,14 +3,23 @@
 // Nuevas variables para el temporizador por pregunta
 let questionTimer = null;
 let currentQuestionTimeLeft = 0;
+let streak = 0; // aciertos seguidos (efecto visual)
 
 
 function startContest(mode) {
     gameMode = mode;
     score = 0;
     errors = 0;
-    totalTimeElapsed = 0; 
-    
+    totalTimeElapsed = 0;
+    startTime = Date.now();
+    streak = 0;
+    updateStreak(0);
+    updatePlayerChip();
+    // En modo docente la práctica libre se termina (y se guarda) con este botón
+    mainMenuButton.textContent = (isTeacherMode() && currentStudent && mode === 'free')
+        ? '✅ Terminar y guardar'
+        : 'Volver al Menú Principal';
+
     rightInfoDisplay.classList.remove('time-warning');
     rightInfoDisplay.style.display = 'inline'; 
     centerTimeDisplay.style.display = 'none'; 
@@ -73,17 +82,22 @@ function handleAnswer(event) {
     }
     
     if (gameMode === 'free') {
-         if (freeModeTimerInterval) clearInterval(freeModeTimerInterval);
-         if (freeModeTimerStartTime > 0) {
+         // stopFreeModeTimer deja el intervalo a null: así endGame no vuelve a sumar este tramo
+         if (freeModeTimerInterval && freeModeTimerStartTime > 0) {
             totalTimeElapsed += (Date.now() - freeModeTimerStartTime) / 1000;
          }
+         stopFreeModeTimer();
     }
 
     if (selectedAnswer === correctAnswer) {
         score++;
-        playSound(aciertoSound); 
+        streak++;
+        playSound(aciertoSound);
         updateFeedback('¡Correcto!', true);
-        
+        floatText('+1', selectedButton);
+        updateStreak(streak);
+        restartAnimation(scoreDisplay, 'score-bump');
+
         if (gameMode === 'chrono' || gameMode === 'sudden_death') {
             autoAdvanceTimeout = setTimeout(() => {
                 if (gameStarted) { 
@@ -99,8 +113,11 @@ function handleAnswer(event) {
 
     } else {
         errors++;
+        streak = 0;
         playSound(errorSound);
-        updateFeedback('Incorrecto.', false); 
+        updateFeedback('Incorrecto.', false);
+        updateStreak(0);
+        restartAnimation(document.getElementById('options-container'), 'shake');
         const correctBtn = optionButtons.find(btn => parseInt(btn.value) === correctAnswer);
         if (correctBtn) correctBtn.classList.add('correct-answer');
         
@@ -180,12 +197,14 @@ function generateNewQuestion() {
     const allOptions = [correctAnswer, ...Array.from(distractors)];
     allOptions.sort(() => Math.random() - 0.5);
 
-    numberToRoundEl.innerHTML = highlightedHtml; 
+    numberToRoundEl.innerHTML = highlightedHtml;
     roundingUnitEl.textContent = `a ${currentUnit} más cercana.`;
+    restartAnimation(numberToRoundEl, 'q-pop');
 
     optionButtons.forEach((button, index) => {
         button.textContent = allOptions[index].toLocaleString('es-ES');
-        button.value = allOptions[index]; 
+        button.value = allOptions[index];
+        restartAnimation(button, 'opt-flip');
     });
 }
 
@@ -195,12 +214,17 @@ function endGame(isSuddenDeathError = false) {
     
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
     if (autoAdvanceTimeout) { clearTimeout(autoAdvanceTimeout); autoAdvanceTimeout = null; }
-    stopFreeModeTimer(); 
+    // En práctica libre se suma el tiempo de la pregunta en curso
+    if (gameMode === 'free' && freeModeTimerInterval && freeModeTimerStartTime > 0) {
+        totalTimeElapsed += (Date.now() - freeModeTimerStartTime) / 1000;
+    }
+    stopFreeModeTimer();
     stopQuestionTimer(); // Detiene el temporizador de pregunta
     stopBGM();
-    if (isMusicOn) playBGM('fin.mp3'); 
-    
-    resetOptionStyles(); 
+    if (isMusicOn) playBGM('fin.mp3');
+
+    resetOptionStyles();
+    updateStreak(0);
     feedbackMessage.style.opacity = '0';
     feedbackMessage.textContent = ''; 
     numberToRoundEl.textContent = 'Juego Terminado.'; 
@@ -209,13 +233,22 @@ function endGame(isSuddenDeathError = false) {
     rightInfoDisplay.style.display = 'none'; 
     centerTimeDisplay.style.display = 'none'; 
 
+    // Duración de la partida (en contrarreloj, el tiempo elegido)
+    const finalTime = (gameMode === 'chrono') ? initialTime
+                    : (gameMode === 'free') ? totalTimeElapsed
+                    : (Date.now() - startTime) / 1000;
+
+    // Modo docente: se registra la partida del alumno en Supabase (sin ranking local)
+    const teacherResultPromise = (isTeacherMode() && currentStudent)
+        ? recordTeacherGame({ mode: gameMode, score, errors, duration: finalTime })
+        : null;
+
     if (gameMode === 'chrono' || gameMode === 'sudden_death') {
-         let calculationTime = (Date.now() - startTime) / 1000;
+         const modeName = gameMode === 'chrono' ? 'Contrarreloj' : 'Muerte Súbita';
          let endGameMessage = '';
-         
+
          if (gameMode === 'chrono') {
              endGameMessage = '¡Tiempo Agotado!';
-             calculationTime = initialTime; // Se usa el tiempo total inicial para el APS
          } else { // sudden_death
              if (isSuddenDeathError) {
                  endGameMessage = '¡Error! Muerte Súbita';
@@ -223,29 +256,36 @@ function endGame(isSuddenDeathError = false) {
                  endGameMessage = '¡Tiempo de Pregunta Agotado!';
              }
          }
-         
+
          endGameTitle.textContent = endGameMessage;
+         summaryApsEl.textContent = (finalTime > 0) ? (score / finalTime).toFixed(2) : '0.00';
 
-         samePlayerButton.textContent = 'Reintentar (Muerte Súbita)';
-         otherPlayerButton.textContent = 'Cambiar Jugador (Muerte Súbita)';
+         if (!teacherResultPromise) {
+             samePlayerButton.textContent = `Reintentar (${modeName})`;
+             otherPlayerButton.textContent = `Cambiar Jugador (${modeName})`;
 
-         saveScore(playerName, score, gameMode);
-         displayRanking(playerName, score, gameMode);
-         summaryApsEl.textContent = (calculationTime > 0) ? (score / calculationTime).toFixed(2) : '0.00';
-         samePlayerButton.style.display = 'block';
-         otherPlayerButton.style.display = 'block';
+             hideTeacherResult();
+             saveScore(playerName, score, gameMode);
+             displayRanking(playerName, score, gameMode);
+             samePlayerButton.style.display = 'block';
+             otherPlayerButton.style.display = 'block';
+         }
     } else {
-         displayRanking(null, null, gameMode); 
          endGameTitle.textContent = '¡Práctica Finalizada!';
          const aps = (totalTimeElapsed > 0) ? (score / totalTimeElapsed).toFixed(2) : '0.00';
-         summaryApsEl.textContent = `(${formatTime(totalTimeElapsed)} total) Aciertos/seg: ${aps}`; 
-         samePlayerButton.style.display = 'none';
-         otherPlayerButton.style.display = 'none';
+         summaryApsEl.textContent = `(${formatTime(totalTimeElapsed)} total) Aciertos/seg: ${aps}`;
+         if (!teacherResultPromise) {
+             hideTeacherResult();
+             displayRanking(null, null, gameMode);
+             samePlayerButton.style.display = 'none';
+             otherPlayerButton.style.display = 'none';
+         }
     }
 
     summaryTotalEl.textContent = score + errors;
     summaryCorrectEl.textContent = score;
     summaryIncorrectEl.textContent = errors;
+    if (teacherResultPromise) showTeacherResult(teacherResultPromise);
     rankingModal.style.display = 'flex';
 }
 

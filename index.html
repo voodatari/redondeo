@@ -7,24 +7,31 @@
      Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>¡REDONDEADOR! Práctica Interactiva</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght400;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="rendimiento.js"></script>
 </head>
 <body>
 
 <canvas id="fondoCanvas"></canvas>
 
-<div class="container game-content-hidden" id="game-container"> 
+<div class="container game-content-hidden" id="game-container">
+    <div id="current-player-chip" style="display:none;"></div>
     <h1 id="game-title">Práctica de Redondeo</h1>
 
     <div class="header-info">
         <span id="score-display">Puntuación: 0</span>
-        <span id="center-time-display" style="display:none;">Tiempo: 0s</span> <span id="right-info-display"></span> </div>
+        <span id="center-time-display" style="display:none;">Tiempo: 0s</span>
+        <span id="right-info-display"></span>
+    </div>
+    <div id="streak-badge"></div>
 
     <div id="question-area">
-        <p>Redondea el siguiente número:</p>
-        <div id="number-to-round"></div> 
+        <p class="question-hint">Redondea el siguiente número:</p>
+        <div id="number-to-round"></div>
         <div id="rounding-unit"></div>
     </div>
 
@@ -35,23 +42,36 @@
         <button class="option-button" id="option2" disabled></button>
         <button class="option-button" id="option3" disabled></button>
     </div>
-    
+
     <button id="next-question-button" style="display:none;">Siguiente Pregunta</button>
-    
+
     <button id="main-menu-button" class="mode-button" style="display:none;">Volver al Menú Principal</button>
 </div>
 
+<!-- ===================== MENÚ PRINCIPAL ===================== -->
 <div id="mode-selection-modal" class="modal">
+    <div id="teacher-bar">
+        <button id="perf-toggle-button" class="chip-button perf-toggle" type="button" aria-pressed="false"><span class="perf-switch" aria-hidden="true"></span>⚡ Modo ligero</button>
+        <button id="teacher-login-button" class="chip-button">👩‍🏫 Acceso docente</button>
+        <div id="teacher-info" style="display:none;">
+            <span class="teacher-hello">👋 <strong id="teacher-name"></strong></span>
+            <select id="class-select" title="Clase activa"></select>
+            <button id="open-students-button" class="chip-button">🧒 Alumnos</button>
+            <button id="open-rankings-button" class="chip-button">🏆 Rankings</button>
+            <button id="logout-button" class="chip-button ghost">Salir</button>
+        </div>
+    </div>
+
     <div id="logo-container">
         <img src="fondo/fondo.png" alt="REDONDEADOR! by profe dani" id="game-logo">
     </div>
-    
+
     <div id="mode-selection-area">
         <h2>Elige tu desafío</h2>
-        <p>Selecciona cómo quieres practicar:</p>
-        <button id="mode-chrono-button" class="mode-button">Contrarreloj</button>
-        <button id="mode-sudden-death-button" class="mode-button" style="background-color: #dc3545;">Muerte Súbita</button>
-        <button id="mode-free-button" class="mode-button" style="background-color: #28a745;">Práctica Libre</button>
+        <p id="mode-hint">Selecciona cómo quieres practicar:</p>
+        <button id="mode-chrono-button" class="mode-button btn-chrono"><span class="btn-icon">⏱️</span> Contrarreloj</button>
+        <button id="mode-sudden-death-button" class="mode-button btn-sudden"><span class="btn-icon">💀</span> Muerte Súbita</button>
+        <button id="mode-free-button" class="mode-button btn-free"><span class="btn-icon">🎯</span> Práctica Libre</button>
     </div>
 
     <div id="mute-toggle-button-container">
@@ -62,13 +82,7 @@
 
 <div id="time-selection-modal" class="modal" style="display:none;">
     <div id="time-selection-area">
-        <h2>Selecciona el Tiempo</h2>
-        <p>¿Cuánto quieres que dure el desafío?</p>
-        <button class="mode-button time-button" data-time="120">2 Minutos</button>
-        <button class="mode-button time-button" data-time="60">1 Minuto</button>
-        <button class="mode-button time-button" data-time="30">30 Segundos</button>
-        <button class="mode-button time-button" data-time="20">20 Segundos</button>
-        <button class="mode-button time-button" data-time="10">10 Segundos</button>
+
     </div>
 </div>
 
@@ -81,20 +95,20 @@
     </div>
 </div>
 
+<!-- ===================== FIN DE PARTIDA ===================== -->
 <div id="ranking-modal" class="modal" style="display:none;">
     <div id="ranking-area">
         <h2 id="end-game-title"></h2>
-        
-        <p>Tu resumen de partida:</p>
+        <div id="teacher-result-header" style="display:none;"></div>
         <div class="summary-stats">
-            <div style="color:#007bff;"><span>Total:</span> <span id="summary-total">0</span></div>
-            <div style="color:#28a745;"><span>Aciertos:</span> <span id="summary-correct">0</span></div>
-            <div style="color:#dc3545;"><span>Errores:</span> <span id="summary-incorrect">0</span></div>
+            <div class="stat-total"><span>Total:</span> <span id="summary-total">0</span></div>
+            <div class="stat-correct"><span>Aciertos:</span> <span id="summary-correct">0</span></div>
+            <div class="stat-wrong"><span>Errores:</span> <span id="summary-incorrect">0</span></div>
             <div class="score-per-sec"><span>Aciertos/seg:</span> <span id="summary-aps">0.00</span></div>
         </div>
 
-        <h3>Ranking (Top 5)</h3>
-<button id="reset-ranking-button">Resetear</button>
+        <h3 id="guest-ranking-title">Ranking (Top 5)</h3>
+        <button id="reset-ranking-button">Resetear</button>
         <table id="ranking-table">
             <thead>
                 <tr>
@@ -106,20 +120,173 @@
             <tbody>
             </tbody>
         </table>
-        
+
+        <div id="teacher-result-area" style="display:none;"></div>
+
         <div id="revisit-options">
             <button id="same-player-button" class="mode-button" style="display:none;"></button>
             <button id="other-player-button" class="mode-button" style="display:none;"></button>
+            <button id="teacher-again-button" class="mode-button" style="display:none;"></button>
+            <button id="teacher-next-button" class="mode-button" style="display:none;">👥 Elegir otro alumno</button>
+            <button id="teacher-rankings-button" class="mode-button" style="display:none;">🏆 Ver rankings</button>
             <button id="mode-select-button" class="mode-button">Elegir modo de juego</button>
         </div>
     </div>
 </div>
 
+<!-- ===================== MODO DOCENTE ===================== -->
+
+<!-- Selector de alumno -->
+<div id="student-picker-modal" class="modal" style="display:none;">
+    <div class="panel panel-xl">
+        <h2 id="picker-title">¿Quién juega?</h2>
+        <p id="picker-subtitle" class="panel-subtitle"></p>
+        <div class="picker-toolbar">
+            <input type="search" id="picker-search" placeholder="🔍 Buscar alumno…" autocomplete="off">
+            <button id="picker-random" class="chip-button primary">🎲 Al azar</button>
+        </div>
+        <div class="student-grid" id="picker-grid"></div>
+        <div class="panel-actions">
+            <button id="picker-back" class="chip-button ghost-dark">← Volver al menú</button>
+        </div>
+    </div>
+</div>
+
+<!-- Acceso docente -->
+<div id="auth-modal" class="modal" style="display:none;">
+    <div class="panel panel-sm" id="auth-panel">
+        <button class="close-x" data-close="auth-modal" aria-label="Cerrar">✕</button>
+        <h2>👩‍🏫 Acceso docente</h2>
+        <div class="tabs" id="auth-tabs">
+            <button type="button" data-auth-tab="login" class="active">Entrar</button>
+            <button type="button" data-auth-tab="signup">Crear cuenta</button>
+        </div>
+        <form id="auth-form" autocomplete="on">
+            <label class="field">Usuario
+                <input type="text" id="auth-username" autocomplete="username" required maxlength="40" placeholder="p. ej. profe.dani">
+            </label>
+            <label class="field">Contraseña
+                <input type="password" id="auth-password" autocomplete="current-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+            </label>
+            <label class="field" id="auth-password2-field" style="display:none;">Repite la contraseña
+                <input type="password" id="auth-password2" autocomplete="new-password" minlength="6">
+            </label>
+            <p id="auth-error" class="form-error"></p>
+            <button type="submit" id="auth-submit" class="mode-button">Entrar</button>
+        </form>
+        <p class="hint">Sin iniciar sesión el juego funciona como siempre, con el ranking local.</p>
+    </div>
+</div>
+
+<!-- Gestión de alumnos -->
+<div id="students-modal" class="modal" style="display:none;">
+    <div class="panel panel-xl">
+        <button class="close-x" data-close="students-modal" aria-label="Cerrar">✕</button>
+        <h2>🧒 Mis alumnos</h2>
+        <div class="toolbar">
+            <select id="students-class-select" title="Clase"></select>
+            <button id="new-class-button" class="chip-button">➕ Nueva clase</button>
+            <button id="rename-class-button" class="chip-button">✏️ Renombrar</button>
+            <button id="delete-class-button" class="chip-button danger">🗑 Borrar clase</button>
+        </div>
+        <div id="import-drop" role="button" tabindex="0">
+            <input type="file" id="pdf-input" accept="application/pdf,.pdf" hidden>
+            <div class="import-icon">📄</div>
+            <div><strong>Importar alumnos desde PDF</strong></div>
+            <small>Arrastra aquí el PDF de Séneca con las fotos de la clase o pulsa para elegirlo</small>
+        </div>
+        <div id="import-status"></div>
+        <div class="grid-header">
+            <span id="students-count"></span>
+            <button id="add-student-button" class="chip-button">➕ Añadir alumno a mano</button>
+        </div>
+        <div class="student-grid" id="students-grid"></div>
+    </div>
+</div>
+
+<!-- Revisión de la importación -->
+<div id="import-preview-modal" class="modal" style="display:none;">
+    <div class="panel panel-xl">
+        <button class="close-x" data-close="import-preview-modal" aria-label="Cerrar">✕</button>
+        <h2>🔎 Revisa los alumnos detectados</h2>
+        <p id="import-summary" class="panel-subtitle"></p>
+        <div class="toolbar">
+            <label class="inline-field">Guardar en:
+                <select id="import-target"></select>
+            </label>
+            <input type="text" id="import-new-class-name" placeholder="Nombre de la nueva clase" maxlength="60">
+        </div>
+        <div class="student-grid review" id="import-grid"></div>
+        <div class="panel-actions">
+            <button id="import-cancel" class="chip-button ghost-dark">Cancelar</button>
+            <button id="import-confirm" class="mode-button btn-free">💾 Guardar alumnos</button>
+        </div>
+    </div>
+</div>
+
+<!-- Editar / añadir alumno -->
+<div id="student-edit-modal" class="modal" style="display:none;">
+    <div class="panel panel-sm">
+        <button class="close-x" data-close="student-edit-modal" aria-label="Cerrar">✕</button>
+        <h2 id="student-edit-title">Editar alumno</h2>
+        <div id="student-edit-photo" title="Pulsa para cambiar la foto"></div>
+        <input type="file" id="student-photo-input" accept="image/*" hidden>
+        <div class="photo-actions">
+            <button type="button" id="student-photo-change" class="chip-button">📷 Cambiar foto</button>
+            <button type="button" id="student-photo-remove" class="chip-button ghost-dark">Quitar foto</button>
+        </div>
+        <label class="field">Nombre
+            <input type="text" id="student-first-name" maxlength="80">
+        </label>
+        <label class="field">Apellidos
+            <input type="text" id="student-last-name" maxlength="80">
+        </label>
+        <div class="panel-actions">
+            <button id="student-delete" class="chip-button danger">🗑 Eliminar</button>
+            <button id="student-save" class="mode-button btn-free">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Rankings -->
+<div id="rankings-modal" class="modal" style="display:none;">
+    <div class="panel panel-xl">
+        <button class="close-x" data-close="rankings-modal" aria-label="Cerrar">✕</button>
+        <h2>🏆 Rankings <span id="rk-class-name" class="class-pill"></span></h2>
+        <div class="tabs" id="rk-tabs">
+            <button type="button" data-tab="session">⚡ Esta sesión</button>
+            <button type="button" data-tab="class">🏫 Total de la clase</button>
+            <button type="button" data-tab="history">📜 Historial</button>
+        </div>
+        <div id="rk-filters">
+            <div class="segmented" id="rk-mode">
+                <button type="button" data-mode="chrono">⏱️ Contrarreloj</button>
+                <button type="button" data-mode="sudden_death">💀 Muerte Súbita</button>
+            </div>
+            <div class="chips" id="rk-settings"></div>
+            <div class="toolbar" id="rk-session-row">
+                <select id="rk-session-select"></select>
+                <button id="rk-new-session" class="chip-button primary">✨ Nueva sesión</button>
+            </div>
+            <div class="toolbar" id="rk-history-row">
+                <select id="rk-history-student"></select>
+            </div>
+        </div>
+        <div id="rk-content"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <script src="audio.js"></script>
 <script src="background-animation.js"></script>
 <script src="dom-references.js"></script>
-<script src="ranking.js"></script>
+<script src="effects.js"></script>
 <script src="ui-manager.js"></script>
+<script src="ranking.js"></script>
+<script src="teacher-data.js"></script>
+<script src="pdf-import.js"></script>
+<script src="teacher-ui.js"></script>
 <script src="game-logic.js"></script>
 <script src="main.js"></script>
 

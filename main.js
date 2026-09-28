@@ -27,8 +27,9 @@ let freeModeTimerStartTime = 0;
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     showModeSelection(true); 
-    muteToggleButton.textContent = isMusicOn ? '🔊' : '🔇'; 
+    updateMuteButton();
     setupCanvas();
+    initTeacherMode(); // recupera la sesión docente si existe (Supabase)
 });
 
 // Menú principal y selección de modo
@@ -36,7 +37,11 @@ muteToggleButton.addEventListener('click', () => { playSound(clickSound); toggle
 modeChronoButton.addEventListener('click', () => { playSound(clickSound); showTimeSelection('chrono'); });
 // MODIFICACIÓN: Llamar a la nueva función de selección de tiempo
 modeSuddenDeathButton.addEventListener('click', () => { playSound(clickSound); showSuddenDeathTimeSelection(); }); 
-modeFreeButton.addEventListener('click', () => { playSound(clickSound); startContest('free'); });
+modeFreeButton.addEventListener('click', () => {
+    playSound(clickSound);
+    if (isTeacherMode()) openStudentPicker('free');
+    else launchGame('free');
+});
 
 // Selección de tiempo y nombre
 // ELIMINAR EL LISTENER ORIGINAL, ahora se maneja en ui-manager.js porque el contenido es dinámico.
@@ -56,7 +61,7 @@ function setPlayerName() {
     }
     playerName = playerNameInput.value.trim().substring(0, 15);
     playerNameModal.style.display = 'none';
-    startContest(gameMode);
+    launchGame(gameMode);
 }
 setNameButton.addEventListener('click', setPlayerName);
 playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') setPlayerName(); });
@@ -72,14 +77,22 @@ nextQuestionButton.addEventListener('click', () => {
     enableOptions(true);
     nextQuestionButton.style.display = 'none'; 
 });
-mainMenuButton.addEventListener('click', () => { playSound(clickSound); showModeSelection(false); }); 
+mainMenuButton.addEventListener('click', () => {
+    playSound(clickSound);
+    if (isTeacherMode() && currentStudent && gameStarted) {
+        // Práctica libre del modo docente: terminar = guardar la partida
+        if (gameMode === 'free') { endGame(); return; }
+        if (!confirm('¿Abandonar la partida? El resultado no se guardará.')) return;
+    }
+    showModeSelection(false);
+});
 
 // Controles post-partida (ranking)
 modeSelectButton.addEventListener('click', () => { playSound(clickSound); showModeSelection(false); });
 samePlayerButton.addEventListener('click', () => {
     rankingModal.style.display = 'none';
-    stopBGM(); 
-    startContest(gameMode); 
+    stopBGM();
+    launchGame(gameMode);
 });
 otherPlayerButton.addEventListener('click', () => {
     playSound(clickSound);

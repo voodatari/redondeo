@@ -5,8 +5,8 @@
 const AUDIO_PATH = 'music/'; 
 let currentBGM = null;
 // MANTENER isMusicOn como el estado de la MÚSICA DE FONDO (BGM).
-// Iniciar como 'false' para que la BGM esté desactivada al inicio.
-let isMusicOn = false; 
+// La música está activada al cargar el juego.
+let isMusicOn = true;
 
 // Inicializar Audio
 const startSound = new Audio(AUDIO_PATH + 'start.mp3');
@@ -58,11 +58,29 @@ function playBGM(file, loop = true) {
     });
 }
 
+// Los navegadores bloquean el audio hasta que el usuario interactúa con la página:
+// con la primera pulsación o tecla se reanuda la música que quedó bloqueada.
+function unlockAudio() {
+    document.removeEventListener('pointerdown', unlockAudio, true);
+    document.removeEventListener('keydown', unlockAudio, true);
+    if (isMusicOn && currentBGM && currentBGM.paused) {
+        currentBGM.play().catch(e => console.log("Autoplay resume error:", e));
+    }
+}
+document.addEventListener('pointerdown', unlockAudio, true);
+document.addEventListener('keydown', unlockAudio, true);
+
+function updateMuteButton() {
+    muteToggleButton.textContent = isMusicOn ? '🔊' : '🔇';
+    const message = document.getElementById('mute-message');
+    if (message) message.textContent = isMusicOn ? 'Pulsa para silenciar la música' : 'Pulsa para activar la música';
+}
+
 // Lógica para activar/desactivar el sonido
 function toggleMusic() {
     isMusicOn = !isMusicOn;
-    // El texto del botón ahora refleja si la MÚSICA DE FONDO está activa (🔊) o no (🔇).
-    muteToggleButton.textContent = isMusicOn ? '🔊' : '🔇';
+    // El texto del botón refleja si la MÚSICA DE FONDO está activa (🔊) o no (🔇).
+    updateMuteButton();
 
     if (isMusicOn) {
         // Al activar: Intentar reproducir la BGM apropiada
