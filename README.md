@@ -74,6 +74,7 @@ Hay que servir la carpeta con un servidor web; abrir `index.html` con doble clic
 
 - [supabase-js](https://github.com/supabase/supabase-js) (MIT) y [pdf.js](https://github.com/mozilla/pdf.js) (Apache 2.0), cargados desde CDN.
 - Tipografías [Fredoka](https://fonts.google.com/specimen/Fredoka) y [Poppins](https://fonts.google.com/specimen/Poppins) (SIL Open Font License), de Google Fonts.
+- Música de bancos de música libre de derechos.
 
 ---
 
