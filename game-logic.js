@@ -183,10 +183,16 @@ function generateNewQuestion() {
     const unitIndexFromRight = Math.log10(powerOfTen);
     const highlightIndex = numStr.length - 1 - unitIndexFromRight;
 
+    // Cifras agrupadas de tres en tres con punto de miles / millones (si está activado en Opciones)
     let highlightedHtml = '';
-    for (let i = 0; i < numStr.length; i++) {
-        highlightedHtml += (i === highlightIndex) ? `<span class="highlighted-digit">${numStr[i]}</span>` : `<span>${numStr[i]}</span>`; 
-    }
+    let i = 0;
+    Ajustes.gruposDeMiles(currentNumber).forEach((group, g) => {
+        if (g > 0) highlightedHtml += '<span class="thousands-dot">.</span>';
+        for (const digit of group) {
+            highlightedHtml += (i === highlightIndex) ? `<span class="highlighted-digit">${digit}</span>` : `<span>${digit}</span>`;
+            i++;
+        }
+    });
     
     let distractors = new Set();
     while (distractors.size < 2) {
@@ -202,7 +208,7 @@ function generateNewQuestion() {
     restartAnimation(numberToRoundEl, 'q-pop');
 
     optionButtons.forEach((button, index) => {
-        button.textContent = allOptions[index].toLocaleString('es-ES');
+        button.textContent = Ajustes.formatear(allOptions[index]);
         button.value = allOptions[index];
         restartAnimation(button, 'opt-flip');
     });
