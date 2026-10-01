@@ -1,14 +1,22 @@
 // --- LÓGICA DE RANKING (LOCALSTORAGE) ---
 let scores = []; 
 
+// Un ranking por modo y dificultad (Más opciones): Estándar usa la clave de
+// siempre, Progresiva la suya y A medida no tiene ranking.
+function rankingKey(mode) {
+    return `redondeoRanking_${mode}` + (Opciones.clave() === 'progresiva' ? '_progresiva' : '');
+}
+function rankingTitleText(mode) {
+    return 'Ranking (Top 5)' + (Opciones.clave() === 'progresiva' ? ' · Progresiva' : '');
+}
+
 function loadRanking(mode) {
     if (!mode || mode === 'free') {
         scores = [];
         return;
     }
     try {
-        const rankingKey = `redondeoRanking_${mode}`;
-        const storedScores = localStorage.getItem(rankingKey);
+        const storedScores = localStorage.getItem(rankingKey(mode));
         scores = storedScores ? JSON.parse(storedScores) : [];
     } catch (e) {
         console.error(`Error leyendo ranking para el modo ${mode}:`, e);
@@ -17,7 +25,7 @@ function loadRanking(mode) {
 }
 
 function saveScore(name, finalScore, mode) {
-    if (!mode || mode === 'free') {
+    if (!mode || mode === 'free' || !Opciones.puntua()) {
         return;
     }
     loadRanking(mode);
@@ -29,8 +37,7 @@ function saveScore(name, finalScore, mode) {
     scores = scores.slice(0, 10); 
 
     try {
-        const rankingKey = `redondeoRanking_${mode}`;
-        localStorage.setItem(rankingKey, JSON.stringify(scores));
+        localStorage.setItem(rankingKey(mode), JSON.stringify(scores));
     } catch (e) {
         console.error(`Error guardando ranking para el modo ${mode}:`, e);
     }
@@ -48,8 +55,19 @@ function displayRanking(currentPlayerName, currentPlayerScore, mode) {
         return;
     }
     
+    // A medida: no hay ranking con el que comparar
+    if (!Opciones.puntua()) {
+        if (rankingTable) rankingTable.style.display = 'none';
+        if (resetRankingButton) resetRankingButton.style.display = 'none';
+        if (rankingTitle) {
+            rankingTitle.style.display = 'block';
+            rankingTitle.textContent = 'Partida A medida: no cuenta para el ranking';
+        }
+        return;
+    }
+
     if (rankingTable) rankingTable.style.display = 'table';
-    if (rankingTitle) rankingTitle.style.display = 'block';
+    if (rankingTitle) { rankingTitle.style.display = 'block'; rankingTitle.textContent = rankingTitleText(mode); }
 
     loadRanking(mode);
     
@@ -102,8 +120,7 @@ async function resetRanking(mode) {
     const modeName = mode === 'chrono' ? 'Contrarreloj' : 'Muerte Súbita';
     if (await confirmDialog('Se borrarán todas las puntuaciones guardadas en este dispositivo.', { title: `¿Borrar el ranking de ${modeName}?`, icon: '🗑️', okText: 'Borrar', danger: true })) {
         try {
-            const rankingKey = `redondeoRanking_${mode}`;
-            localStorage.removeItem(rankingKey);
+            localStorage.removeItem(rankingKey(mode));
             displayRanking(null, null, mode);
         } catch (e) {
             console.error(`Error reseteando el ranking para el modo ${mode}:`, e);

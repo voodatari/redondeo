@@ -47,7 +47,7 @@ function showTimeSelection(mode) {
         <button class="mode-button time-button" data-time="30">30 Segundos</button>
         <button class="mode-button time-button" data-time="20">20 Segundos</button>
         <button class="mode-button time-button" data-time="10">10 Segundos</button>
-        <button class="chip-button ghost-dark back-button">← Volver</button>
+        ${timeFooterHTML('btn-chrono')}
     `;
     addTimeSelectionBackButton();
 
@@ -81,7 +81,7 @@ function showSuddenDeathTimeSelection() {
         <button class="mode-button time-button" data-time="3">3s</button>
         <button class="mode-button time-button" data-time="2">2s</button>
         <button class="mode-button time-button" data-time="1">1s</button>
-        <button class="chip-button ghost-dark back-button">← Volver</button>
+        ${timeFooterHTML('btn-sudden')}
     `;
     addTimeSelectionBackButton();
 
@@ -105,11 +105,61 @@ function showSuddenDeathTimeSelection() {
 }
 
 
+// Práctica libre: no tiene tiempo que elegir, pero sí la misma pantalla previa
+// para poder cambiar la dificultad en «Más opciones» antes de empezar.
+function showFreeSelection() {
+    gameMode = 'free';
+    modeSelectionModal.style.display = 'none';
+    rankingModal.style.display = 'none';
+    timeSelectionModal.style.display = 'flex';
+
+    const timeArea = document.getElementById('time-selection-area');
+    timeArea.innerHTML = `
+        <h2>Práctica Libre</h2>
+        <p>Sin tiempo y sin ranking: a tu ritmo. Puedes cambiar la dificultad en «Más opciones».</p>
+        <button class="mode-button time-button btn-free free-start-button">🎯 Empezar</button>
+        ${timeFooterHTML('btn-violet')}
+    `;
+    addTimeSelectionBackButton();
+
+    document.querySelector('#time-selection-area .free-start-button').addEventListener('click', () => {
+        playSound(clickSound);
+        timeSelectionModal.style.display = 'none';
+        if (isTeacherMode()) openStudentPicker('free');
+        else launchGame('free');
+    });
+}
+
+// Pie de la selección de tiempo: Volver · dificultad elegida · Más opciones
+// colorMode: color del botón «Más opciones», el del modo en el menú principal
+function timeFooterHTML(colorMode) {
+    return `<div class="time-footer">
+            <button class="chip-button ghost-dark back-button">← Volver</button>
+            <span class="time-variant" id="time-variant"></span>
+            <button class="chip-button more-button ${colorMode}">⚙️ Más opciones</button>
+        </div>`;
+}
+
+function paintTimeVariant() {
+    const el = document.getElementById('time-variant');
+    if (!el) return;
+    const ranked = Opciones.puntua();
+    const free = gameMode === 'free';   // la práctica libre nunca tiene ranking
+    el.className = 'time-variant ' + (free ? 'neutral' : ranked ? 'ranked' : 'unranked');
+    el.textContent = Opciones.etiqueta();
+    el.title = free ? 'Dificultad elegida' : ranked ? 'Cuenta para el ranking' : 'A medida: se guarda, pero no cuenta para el ranking';
+}
+
 function addTimeSelectionBackButton() {
     document.querySelector('#time-selection-area .back-button').addEventListener('click', () => {
         playSound(clickSound);
         showModeSelection(false);
     });
+    document.querySelector('#time-selection-area .more-button').addEventListener('click', () => {
+        playSound(clickSound);
+        Opciones.abrir(paintTimeVariant);
+    });
+    paintTimeVariant();
 }
 
 function showPlayerNameModal(mode) {

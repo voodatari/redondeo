@@ -37,11 +37,7 @@ muteToggleButton.addEventListener('click', () => { playSound(clickSound); toggle
 modeChronoButton.addEventListener('click', () => { playSound(clickSound); showTimeSelection('chrono'); });
 // MODIFICACIÓN: Llamar a la nueva función de selección de tiempo
 modeSuddenDeathButton.addEventListener('click', () => { playSound(clickSound); showSuddenDeathTimeSelection(); }); 
-modeFreeButton.addEventListener('click', () => {
-    playSound(clickSound);
-    if (isTeacherMode()) openStudentPicker('free');
-    else launchGame('free');
-});
+modeFreeButton.addEventListener('click', () => { playSound(clickSound); showFreeSelection(); });
 
 // Selección de tiempo y nombre
 // ELIMINAR EL LISTENER ORIGINAL, ahora se maneja en ui-manager.js porque el contenido es dinámico.

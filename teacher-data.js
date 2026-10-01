@@ -182,9 +182,28 @@ async function fetchSessions(classId) {
 
 // --- PARTIDAS ---
 
+// Dificultad de la partida (Más opciones, opciones.js), columna "variant":
+//   NULL = estándar · 'progresiva' · 'A medida · …' (sin ranking)
+// Las bases de datos sin actualizar no tienen la columna: ahí solo se puede
+// jugar en estándar. Se comprueba una vez: true = está, false = no está,
+// null = no se sabe (sin conexión; se vuelve a mirar la próxima vez).
+let variantColumn = null;
+async function hasVariantColumn() {
+    if (variantColumn !== null) return variantColumn;
+    try {
+        const { error } = await sb.from('games').select('variant').limit(1);
+        if (error && /variant/i.test(error.message || '')) variantColumn = false;
+        else if (!error) variantColumn = true;
+    } catch (e) { /* sin conexión */ }
+    return variantColumn;
+}
+function isRankedVariant(variant) { return variant == null || variant === 'progresiva'; }
+const SCHEMA_ERROR = 'Falta actualizar la base de datos: ejecuta otra vez supabase/schema.sql en Supabase para guardar partidas Progresivas o A medida.';
+
 async function fetchPersonalBest(game) {
     let query = sb.from('games').select('score').eq('student_id', game.student_id).eq('game', GAME_ID).eq('mode', game.mode);
     query = game.setting == null ? query.is('setting', null) : query.eq('setting', game.setting);
+    if (await hasVariantColumn() !== false) query = game.variant == null ? query.is('variant', null) : query.eq('variant', game.variant);
     const { data, error } = await query.order('score', { ascending: false }).limit(1);
     if (error) throw error;
     return data && data.length ? data[0].score : null;
@@ -192,8 +211,13 @@ async function fetchPersonalBest(game) {
 
 // Guarda una partida. Si no hay conexión la deja en cola local y se reintenta más tarde.
 async function saveGameResult(game) {
-    const result = { saved: false, queued: false, prevBest: null, ranking: [], sessionId: null };
+    const result = { saved: false, queued: false, prevBest: null, ranking: [], sessionId: null, ranked: isRankedVariant(game.variant) };
     const classId = activeClassId;
+    if (await hasVariantColumn() === false) {
+        if (game.variant != null) { result.schemaError = SCHEMA_ERROR; return result; }
+        game = { ...game };
+        delete game.variant;
+    }
     try {
         await flushPendingGames();
         const session = await ensureActiveSession();
@@ -202,7 +226,9 @@ async function saveGameResult(game) {
         const { error } = await sb.from('games').insert({ ...game, game: GAME_ID, class_id: classId, session_id: session.id });
         if (error) throw error;
         result.saved = true;
-        result.ranking = await fetchRanking({ mode: game.mode, setting: game.setting, anySetting: false, sessionId: session.id });
+        if (result.ranked) {
+            result.ranking = await fetchRanking({ mode: game.mode, setting: game.setting, anySetting: false, sessionId: session.id, variant: game.variant });
+        }
     } catch (err) {
         console.error('Error guardando la partida:', err);
         if (!result.saved) {
@@ -239,22 +265,26 @@ async function flushPendingGames() {
     return sent;
 }
 
-async function fetchRanking({ mode, setting = null, anySetting = true, sessionId = null }) {
-    const { data, error } = await sb.rpc('class_ranking', {
+async function fetchRanking({ mode, setting = null, anySetting = true, sessionId = null, variant = null }) {
+    const params = {
         p_class_id: activeClassId,
         p_mode: mode,
         p_setting: setting,
         p_any_setting: anySetting,
         p_session_id: sessionId,
         p_game: GAME_ID
-    });
+    };
+    // con la base de datos actualizada, cada dificultad tiene su ranking
+    if (await hasVariantColumn() !== false) params.p_variant = variant;
+    else if (variant != null) return [];
+    const { data, error } = await sb.rpc('class_ranking', params);
     if (error) throw error;
     return data || [];
 }
 
 async function fetchHistory({ studentId = null, offset = 0, limit = 50 }) {
     let query = sb.from('games')
-        .select('id, student_id, session_id, mode, setting, score, errors, duration_seconds, played_at')
+        .select('id, student_id, session_id, mode, setting, score, errors, duration_seconds, played_at' + (await hasVariantColumn() !== false ? ', variant' : ''))
         .eq('class_id', activeClassId)
         .eq('game', GAME_ID);
     if (studentId) query = query.eq('student_id', studentId);

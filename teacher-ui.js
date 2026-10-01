@@ -64,6 +64,10 @@ function settingLabel(mode, setting) {
     return '';
 }
 
+// Dificultad elegida en «Más opciones» (vacía si es la estándar)
+function variantLabel() { return Opciones.clave() === 'estandar' ? '' : Opciones.etiqueta(); }
+function storedVariantLabel(variant) { return variant == null ? '' : variant === 'progresiva' ? 'Progresiva' : variant; }
+
 function currentGameSetting(mode) {
     if (mode === 'chrono') return initialTime;
     if (mode === 'sudden_death') return suddenDeathTimeLimit === Infinity ? null : suddenDeathTimeLimit;
@@ -546,7 +550,7 @@ async function openStudentPicker(mode) {
 
     const setting = currentGameSetting(mode);
     $('picker-title').textContent = '¿Quién juega?';
-    $('picker-subtitle').textContent = [modeLabel(mode), settingLabel(mode, setting), activeClass().name].filter(Boolean).join(' · ');
+    $('picker-subtitle').textContent = [modeLabel(mode), settingLabel(mode, setting), variantLabel(), activeClass().name].filter(Boolean).join(' · ');
     pickerSearch.value = '';
     pickerBusy = false;
     pickerSessionStats = new Map();
@@ -554,9 +558,9 @@ async function openStudentPicker(mode) {
     openModal('student-picker-modal');
     fitPickerGrid();
 
-    if (activeSession) {
+    if (activeSession && Opciones.puntua()) {
         try {
-            const rows = await fetchRanking({ mode, setting, anySetting: false, sessionId: activeSession.id });
+            const rows = await fetchRanking({ mode, setting, anySetting: false, sessionId: activeSession.id, variant: Opciones.variante() });
             rows.forEach(r => pickerSessionStats.set(r.student_id, r));
             decoratePickerCards();
         } catch (err) { console.warn('No se pudieron cargar las partidas de la sesión', err); }
@@ -716,6 +720,7 @@ function recordTeacherGame({ mode, score: finalScore, errors: finalErrors, durat
         student_id: student.id,
         mode,
         setting: currentGameSetting(mode),
+        variant: Opciones.variante(),
         score: finalScore,
         errors: finalErrors,
         duration_seconds: Math.round(duration * 100) / 100,
@@ -747,7 +752,7 @@ async function showTeacherResult(resultPromise) {
 
     teacherResultHeader.innerHTML = `${avatarHTML(student, 'avatar-xl')}
         <div class="result-student-name">${esc(student.first_name)} ${esc(student.last_name)}</div>
-        <div class="result-mode">${esc([modeLabel(gameMode), settingLabel(gameMode, currentGameSetting(gameMode))].filter(Boolean).join(' · '))}</div>`;
+        <div class="result-mode">${esc([modeLabel(gameMode), settingLabel(gameMode, currentGameSetting(gameMode)), variantLabel()].filter(Boolean).join(' · '))}</div>`;
     teacherResultHeader.style.display = 'flex';
     teacherResultArea.innerHTML = loaderHTML('Guardando resultado…');
     teacherResultArea.style.display = 'block';
@@ -760,12 +765,15 @@ async function showTeacherResult(resultPromise) {
     const r = await resultPromise;
     let html = '';
     if (r.skipped) html += '<div class="result-status muted">No se ha registrado: no hubo respuestas.</div>';
+    else if (r.schemaError) html += `<div class="result-status warn">⚠️ ${esc(r.schemaError)}</div>`;
     else if (r.saved) html += `<div class="result-status ok">✅ Partida guardada · ${esc(fmtDateTime(r.game.played_at, true))}</div>`;
     else html += '<div class="result-status warn">⚠️ Sin conexión: el resultado se guardará automáticamente más tarde.</div>';
 
     const isRecord = r.saved && r.game.score > 0 && (r.prevBest == null || r.game.score > r.prevBest);
     if (isRecord) html += `<div class="record-badge">🏅 ¡Nuevo récord personal!${r.prevBest != null ? ` <small>(antes ${r.prevBest})</small>` : ''}</div>`;
     else if (r.saved && r.prevBest != null) html += `<div class="pb-line">Récord personal: <strong>${r.prevBest}</strong></div>`;
+
+    if (r.saved && r.ranked === false) html += '<div class="pb-line">📝 Partida A medida: queda en el historial, pero no cuenta para el ranking.</div>';
 
     let position = 0;
     if (r.ranking && r.ranking.length) {
@@ -808,10 +816,12 @@ teacherNextButton.addEventListener('click', () => {
 teacherRankingsButton.addEventListener('click', () => {
     playSound(clickSound);
     const setting = currentGameSetting(gameMode);
+    const ranked = gameMode !== 'free' && Opciones.puntua();
     openRankings({
-        tab: gameMode === 'free' ? 'history' : 'session',
+        tab: ranked ? 'session' : 'history',
         mode: gameMode === 'free' ? rk.mode : gameMode,
-        setting: gameMode === 'free' ? rk.setting : (setting == null ? 'inf' : setting)
+        setting: gameMode === 'free' ? rk.setting : (setting == null ? 'inf' : setting),
+        variant: ranked ? Opciones.clave() : rk.variant
     });
 });
 
@@ -823,7 +833,7 @@ const RK_SETTINGS = {
 };
 const HISTORY_PAGE = 50;
 
-const rk = { tab: 'session', mode: 'chrono', setting: 'all', sessionId: null, historyStudent: '', historyOffset: 0 };
+const rk = { tab: 'session', mode: 'chrono', variant: 'estandar', setting: 'all', sessionId: null, historyStudent: '', historyOffset: 0 };
 let rkSessions = [];
 let rkRenderToken = 0;
 
@@ -851,9 +861,11 @@ async function openRankings(options = {}) {
 function renderRkControls() {
     document.querySelectorAll('#rk-tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === rk.tab));
     document.querySelectorAll('#rk-mode button').forEach(b => b.classList.toggle('active', b.dataset.mode === rk.mode));
+    document.querySelectorAll('#rk-variant button').forEach(b => b.classList.toggle('active', b.dataset.variant === rk.variant));
 
     const isHistory = rk.tab === 'history';
     $('rk-mode').style.display = isHistory ? 'none' : '';
+    $('rk-variant').style.display = isHistory ? 'none' : '';
     $('rk-settings').style.display = isHistory ? 'none' : '';
     $('rk-session-row').style.display = rk.tab === 'session' ? '' : 'none';
     $('rk-history-row').style.display = isHistory ? '' : 'none';
@@ -900,7 +912,8 @@ async function renderRkContent() {
             mode: rk.mode,
             setting: (rk.setting === 'all' || rk.setting === 'inf') ? null : Number(rk.setting),
             anySetting: rk.setting === 'all',
-            sessionId: rk.tab === 'session' ? rk.sessionId : null
+            sessionId: rk.tab === 'session' ? rk.sessionId : null,
+            variant: rk.variant === 'progresiva' ? 'progresiva' : null
         });
         if (token !== rkRenderToken) return;
         rkContent.innerHTML = rows.length
@@ -945,7 +958,8 @@ function rankingBoardHTML(rows) {
 
 function historyRowHTML(g) {
     const s = studentById(g.student_id);
-    const setting = g.mode === 'free' ? '' : ` <small>(${esc(settingLabel(g.mode, g.setting))})</small>`;
+    const details = [g.mode === 'free' ? '' : settingLabel(g.mode, g.setting), storedVariantLabel(g.variant)].filter(Boolean).join(' · ');
+    const setting = details ? ` <small>(${esc(details)})</small>` : '';
     const duration = g.duration_seconds != null ? formatTime(Number(g.duration_seconds)) : '—';
     return `<tr data-id="${g.id}">
         <td>${esc(fmtDateTime(g.played_at, true))}</td>
@@ -968,6 +982,13 @@ document.querySelectorAll('#rk-tabs button').forEach(b => b.addEventListener('cl
 document.querySelectorAll('#rk-mode button').forEach(b => b.addEventListener('click', () => {
     rk.mode = b.dataset.mode;
     rk.setting = 'all';
+    renderRkControls();
+    renderRkContent();
+}));
+
+document.querySelectorAll('#rk-variant button').forEach(b => b.addEventListener('click', () => {
+    playSound(clickSound);
+    rk.variant = b.dataset.variant;
     renderRkControls();
     renderRkContent();
 }));

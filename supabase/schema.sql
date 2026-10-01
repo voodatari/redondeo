@@ -41,6 +41,8 @@ create table if not exists public.sessions (
 --   game     : 'multiplicador' o 'redondeo'
 --   mode     : 'chrono' (contrarreloj), 'sudden_death' (muerte súbita), 'free' (práctica libre)
 --   setting  : chrono → segundos totales; sudden_death → segundos por pregunta (NULL = infinito); free → NULL
+--   variant  : dificultad (Redondeador, «Más opciones»): NULL = estándar, 'progresiva'
+--              o 'A medida · …' (esta última no entra en ningún ranking)
 --   score    : aciertos
 create table if not exists public.games (
     id               uuid primary key default gen_random_uuid(),
@@ -61,6 +63,8 @@ create table if not exists public.games (
 -- (las partidas y sesiones que ya existían quedan como del Multiplicador)
 alter table public.sessions add column if not exists game text not null default 'multiplicador';
 alter table public.games    add column if not exists game text not null default 'multiplicador';
+-- Dificultad de la partida (el Multiplicador no la usa: siempre NULL)
+alter table public.games    add column if not exists variant text check (variant is null or char_length(variant) <= 80);
 
 -- ---------- ÍNDICES ----------
 drop index if exists public.sessions_class_idx;
@@ -125,14 +129,17 @@ grant select, insert, update, delete on public.classes, public.students, public.
 --   p_any_setting = false → solo la configuración p_setting (NULL = infinito)
 --   p_session_id  = NULL  → ranking total de la clase; si no, solo esa sesión
 --   p_game        = juego ('multiplicador' por defecto, para versiones antiguas del juego)
+--   p_variant     = dificultad (NULL = estándar, 'progresiva'); cada una tiene su ranking
 drop function if exists public.class_ranking(uuid, text, integer, boolean, uuid);
+drop function if exists public.class_ranking(uuid, text, integer, boolean, uuid, text);
 create or replace function public.class_ranking(
     p_class_id    uuid,
     p_mode        text,
     p_setting     integer default null,
     p_any_setting boolean default true,
     p_session_id  uuid    default null,
-    p_game        text    default 'multiplicador'
+    p_game        text    default 'multiplicador',
+    p_variant     text    default null
 )
 returns table (
     student_id  uuid,
@@ -159,9 +166,10 @@ as $$
       and g.mode = p_mode
       and (p_session_id is null or g.session_id = p_session_id)
       and (p_any_setting or g.setting is not distinct from p_setting)
+      and g.variant is not distinct from p_variant
     group by g.student_id
     order by 2 desc, 5 asc;
 $$;
 
-revoke execute on function public.class_ranking(uuid, text, integer, boolean, uuid, text) from public, anon;
-grant execute on function public.class_ranking(uuid, text, integer, boolean, uuid, text) to authenticated;
+revoke execute on function public.class_ranking(uuid, text, integer, boolean, uuid, text, text) from public, anon;
+grant execute on function public.class_ranking(uuid, text, integer, boolean, uuid, text, text) to authenticated;

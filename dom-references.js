@@ -7,6 +7,7 @@ const centerTimeDisplay = document.getElementById('center-time-display');
 const rightInfoDisplay = document.getElementById('right-info-display'); 
 
 const numberToRoundEl = document.getElementById('number-to-round');
+const questionHintEl = document.querySelector('#question-area .question-hint');
 const roundingUnitEl = document.getElementById('rounding-unit');
 const optionButtons = [
     document.getElementById('option1'),

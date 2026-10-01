@@ -98,6 +98,12 @@ function handleAnswer(event) {
         updateStreak(streak);
         restartAnimation(scoreDisplay, 'score-bump');
 
+        // Dificultad progresiva: cada 5 aciertos, una cifra más
+        if (Opciones.progresiva() && score % Opciones.aciertosPorNivel === 0 &&
+            Opciones.cifrasProgresiva(score) > Opciones.cifrasProgresiva(score - 1)) {
+            showToast(`⬆️ ¡Subes de nivel! Ahora con ${Opciones.cifrasProgresiva(score)} cifras`, 'success', 2200);
+        }
+
         if (gameMode === 'chrono' || gameMode === 'sudden_death') {
             autoAdvanceTimeout = setTimeout(() => {
                 if (gameStarted) { 
@@ -165,23 +171,18 @@ function generateNewQuestion() {
         startQuestionTimer(); 
     }
 
-    const units = [10, 100, 1000, 10000];
-    const unitNames = {
-        10: 'la decena', 100: 'la centena', 1000: 'la unidad de millar', 10000: 'la decena de millar'
-    };
-
-    const powerOfTen = units[Math.floor(Math.random() * units.length)];
-    currentUnit = unitNames[powerOfTen];
-
-    const minNum = powerOfTen * 5;
-    const maxNum = 100000;
-    currentNumber = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum;
+    // Número y unidad según la dificultad elegida en «Más opciones» (opciones.js)
+    const q = Opciones.pregunta(score);
+    const powerOfTen = q.unidad;
+    currentUnit = q.nombreUnidad;
+    currentNumber = q.numero;
 
     correctAnswer = Math.round(currentNumber / powerOfTen) * powerOfTen;
 
     const numStr = currentNumber.toString();
-    const unitIndexFromRight = Math.log10(powerOfTen);
-    const highlightIndex = numStr.length - 1 - unitIndexFromRight;
+    const unitIndexFromRight = q.exponente;
+    // «Sin cifra resaltada»: no se marca ninguna
+    const highlightIndex = Opciones.sinResaltar() ? -1 : numStr.length - 1 - unitIndexFromRight;
 
     // Cifras agrupadas de tres en tres con punto de miles / millones (si está activado en Opciones)
     let highlightedHtml = '';
@@ -193,15 +194,16 @@ function generateNewQuestion() {
             i++;
         }
     });
-    
-    let distractors = new Set();
-    while (distractors.size < 2) {
-        let offset = (Math.floor(Math.random() * 2) * 2 - 1) * powerOfTen;
-        let newDistractor = correctAnswer + offset;
-        if (newDistractor !== correctAnswer && newDistractor > 0) distractors.add(newDistractor);
-    }
-    const allOptions = [correctAnswer, ...Array.from(distractors)];
+
+    const allOptions = [correctAnswer, ...Opciones.distractores(currentNumber, correctAnswer, powerOfTen)];
     allOptions.sort(() => Math.random() - 0.5);
+
+    // Encima del número: el nivel en la progresiva y la dificultad si no es la estándar
+    // (en el título la ventana cambiaría de alto)
+    questionHintEl.textContent = Opciones.progresiva()
+        ? `📈 Nivel ${Opciones.cifrasProgresiva(score) - 1} · ${q.cifras} cifras${Opciones.puntua() ? '' : ' · A medida'}`
+        : Opciones.puntua() ? 'Redondea el siguiente número:' : '📝 A medida · Redondea el siguiente número:';
+    numberToRoundEl.classList.toggle('long-number', numStr.length >= 7);
 
     numberToRoundEl.innerHTML = highlightedHtml;
     roundingUnitEl.textContent = `a ${currentUnit} más cercana.`;

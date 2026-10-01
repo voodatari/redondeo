@@ -11,9 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=20261001c">
-    <script src="rendimiento.js?v=20261001c"></script>
-    <script src="escala.js?v=20261001c"></script>
+    <link rel="stylesheet" href="style.css?v=20261001f">
+    <script src="rendimiento.js?v=20261001f"></script>
+    <script src="escala.js?v=20261001f"></script>
 </head>
 <body>
 
@@ -125,6 +125,11 @@
             </button>
         </div>
     </div>
+</div>
+
+<!-- Más opciones de partida (opciones.js): se abre desde la selección de tiempo -->
+<div id="options-modal" class="modal" style="display:none;">
+    <div class="panel panel-sm" id="options-area"></div>
 </div>
 
 <!-- ===================== FIN DE PARTIDA ===================== -->
@@ -295,6 +300,10 @@
                 <button type="button" data-mode="chrono">⏱️ Contrarreloj</button>
                 <button type="button" data-mode="sudden_death">💀 Muerte Súbita</button>
             </div>
+            <div class="segmented" id="rk-variant">
+                <button type="button" data-variant="estandar">Estándar</button>
+                <button type="button" data-variant="progresiva">📈 Progresiva</button>
+            </div>
             <div class="chips" id="rk-settings"></div>
             <div class="toolbar" id="rk-session-row">
                 <select id="rk-session-select"></select>
@@ -309,19 +318,20 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20261001c"></script>
-<script src="audio.js?v=20261001c"></script>
-<script src="background-animation.js?v=20261001c"></script>
-<script src="ajustes.js?v=20261001c"></script>
-<script src="dom-references.js?v=20261001c"></script>
-<script src="effects.js?v=20261001c"></script>
-<script src="ui-manager.js?v=20261001c"></script>
-<script src="ranking.js?v=20261001c"></script>
-<script src="teacher-data.js?v=20261001c"></script>
-<script src="pdf-import.js?v=20261001c"></script>
-<script src="teacher-ui.js?v=20261001c"></script>
-<script src="game-logic.js?v=20261001c"></script>
-<script src="main.js?v=20261001c"></script>
+<script src="config.js?v=20261001f"></script>
+<script src="audio.js?v=20261001f"></script>
+<script src="background-animation.js?v=20261001f"></script>
+<script src="ajustes.js?v=20261001f"></script>
+<script src="opciones.js?v=20261001f"></script>
+<script src="dom-references.js?v=20261001f"></script>
+<script src="effects.js?v=20261001f"></script>
+<script src="ui-manager.js?v=20261001f"></script>
+<script src="ranking.js?v=20261001f"></script>
+<script src="teacher-data.js?v=20261001f"></script>
+<script src="pdf-import.js?v=20261001f"></script>
+<script src="teacher-ui.js?v=20261001f"></script>
+<script src="game-logic.js?v=20261001f"></script>
+<script src="main.js?v=20261001f"></script>
 
 </body>
 </html>
