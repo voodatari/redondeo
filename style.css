@@ -655,6 +655,15 @@ html.ligero #mode-selection-modal { background: rgba(6, 10, 32, 0.2); }
 html.ligero #teacher-info,
 html.ligero .settings-gear { background: rgba(10, 20, 55, 0.85); }
 
+/* Escala fija (escala.js): se amplía o reduce lo que va dentro de los velos,
+   no los velos, que siguen cubriendo toda la pantalla */
+html.escala-fija #game-container,
+html.escala-fija .modal > *,
+html.escala-fija .dialog-overlay > *,
+html.escala-fija #countdown-overlay > * {
+    zoom: var(--escala, 1);
+}
+
 @media (max-width: 900px) {
     #teacher-bar { flex-wrap: wrap; }
     #teacher-bar { position: static; margin-bottom: 26px; justify-content: center; max-width: 100%; }

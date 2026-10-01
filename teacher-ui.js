@@ -595,7 +595,9 @@ function fitPickerGrid() {
 
     // alto libre = ventana - márgenes del modal - lo que ocupa el panel sin la cuadrícula
     const chrome = panel.offsetHeight - pickerGrid.offsetHeight;
-    const availH = window.innerHeight - 40 - chrome - 8;
+    // con escala fija el panel va ampliado o reducido: el alto de la ventana se pasa a sus unidades
+    const z = window.Escala ? Escala.factor() : 1;
+    const availH = (window.innerHeight - 40) / z - chrome - 8;
     const availW = pickerGrid.clientWidth;
 
     let best = null;

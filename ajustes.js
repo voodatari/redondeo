@@ -43,6 +43,7 @@ window.Ajustes = (function () {
         pintar();
     });
     document.getElementById('perf-toggle-button').addEventListener('click', sonar);
+    document.getElementById('scale-toggle-button').addEventListener('click', sonar);
     modal.addEventListener('mousedown', function (e) { if (e.target === modal) cerrar(); });
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && modal.style.display === 'flex') cerrar();

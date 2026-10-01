@@ -11,8 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=20261001b">
-    <script src="rendimiento.js?v=20261001b"></script>
+    <link rel="stylesheet" href="style.css?v=20261001c">
+    <script src="rendimiento.js?v=20261001c"></script>
+    <script src="escala.js?v=20261001c"></script>
 </head>
 <body>
 
@@ -112,6 +113,13 @@
                 <span class="setting-text">
                     <strong>⚡ Modo ligero</strong>
                     <small>Quita el desenfoque si el juego va lento.</small>
+                </span>
+                <span class="perf-switch" aria-hidden="true"></span>
+            </button>
+            <button id="scale-toggle-button" class="setting-row" type="button" aria-pressed="true">
+                <span class="setting-text">
+                    <strong>🖥️ Escala fija</strong>
+                    <small id="scale-toggle-info">Mantiene el aspecto previsto aunque Windows use una escala del 125 % o 150 %.</small>
                 </span>
                 <span class="perf-switch" aria-hidden="true"></span>
             </button>
@@ -301,19 +309,19 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20261001b"></script>
-<script src="audio.js?v=20261001b"></script>
-<script src="background-animation.js?v=20261001b"></script>
-<script src="ajustes.js?v=20261001b"></script>
-<script src="dom-references.js?v=20261001b"></script>
-<script src="effects.js?v=20261001b"></script>
-<script src="ui-manager.js?v=20261001b"></script>
-<script src="ranking.js?v=20261001b"></script>
-<script src="teacher-data.js?v=20261001b"></script>
-<script src="pdf-import.js?v=20261001b"></script>
-<script src="teacher-ui.js?v=20261001b"></script>
-<script src="game-logic.js?v=20261001b"></script>
-<script src="main.js?v=20261001b"></script>
+<script src="config.js?v=20261001c"></script>
+<script src="audio.js?v=20261001c"></script>
+<script src="background-animation.js?v=20261001c"></script>
+<script src="ajustes.js?v=20261001c"></script>
+<script src="dom-references.js?v=20261001c"></script>
+<script src="effects.js?v=20261001c"></script>
+<script src="ui-manager.js?v=20261001c"></script>
+<script src="ranking.js?v=20261001c"></script>
+<script src="teacher-data.js?v=20261001c"></script>
+<script src="pdf-import.js?v=20261001c"></script>
+<script src="teacher-ui.js?v=20261001c"></script>
+<script src="game-logic.js?v=20261001c"></script>
+<script src="main.js?v=20261001c"></script>
 
 </body>
 </html>
