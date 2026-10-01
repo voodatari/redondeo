@@ -179,7 +179,7 @@ h1 {
 
 /* cifra a la que hay que redondear */
 /* punto de miles / millones entre los grupos de cifras */
-.thousands-dot { margin: 0 1px; color: var(--muted); }
+.thousands-dot { margin: 0 1px; }
 
 .highlighted-digit {
     display: inline-block;
