@@ -35,7 +35,6 @@ const summaryCorrectEl = document.getElementById('summary-correct');
 const summaryIncorrectEl = document.getElementById('summary-incorrect');
 const summaryApsEl = document.getElementById('summary-aps'); 
 const rankingTableBody = document.querySelector('#ranking-table tbody');
-const nextQuestionButton = document.getElementById('next-question-button');
 
 const samePlayerButton = document.getElementById('same-player-button');
 const otherPlayerButton = document.getElementById('other-player-button');

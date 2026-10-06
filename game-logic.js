@@ -44,7 +44,6 @@ function startContest(mode) {
          gameTitleEl.textContent = 'Modo Contrarreloj';
          timeLeft = initialTime;
          rightInfoDisplay.textContent = `Tiempo: ${timeLeft}s`;
-         if (nextQuestionButton) nextQuestionButton.style.display = 'none';
          startChronoTimer();
          playBGM('2.mp3'); 
     } else if (gameMode === 'sudden_death') {
@@ -52,13 +51,11 @@ function startContest(mode) {
          startTime = Date.now(); 
          rightInfoDisplay.textContent = `Tiempo: 0s`; // Muestra el tiempo total transcurrido
          centerTimeDisplay.style.display = 'block'; // Muestra el tiempo por pregunta
-         if (nextQuestionButton) nextQuestionButton.style.display = 'none';
          startSuddenDeathTimer(); // Temporizador que mide el tiempo total de la partida
          playBGM('3.mp3');
     } else { // free
          gameTitleEl.textContent = 'Práctica Libre';
          rightInfoDisplay.textContent = `Errores: ${errors}`;
-         if (nextQuestionButton) nextQuestionButton.style.display = 'none'; 
          startFreeModeTimer(); 
          playBGM('1.mp3');
     }
@@ -104,18 +101,15 @@ function handleAnswer(event) {
             showToast(`⬆️ ¡Subes de nivel! Ahora con ${Opciones.cifrasProgresiva(score)} cifras`, 'success', 2200);
         }
 
-        if (gameMode === 'chrono' || gameMode === 'sudden_death') {
-            autoAdvanceTimeout = setTimeout(() => {
-                if (gameStarted) { 
-                    resetOptionStyles();
-                    feedbackMessage.style.opacity = '0';
-                    generateNewQuestion();
-                    enableOptions(true);
-                }
-            }, 500); 
-        } else {
-            if (nextQuestionButton) nextQuestionButton.style.display = 'block';
-        }
+        // En práctica libre se deja un poco más para ver el acierto
+        autoAdvanceTimeout = setTimeout(() => {
+            if (gameStarted) { 
+                resetOptionStyles();
+                feedbackMessage.style.opacity = '0';
+                generateNewQuestion();
+                enableOptions(true);
+            }
+        }, gameMode === 'free' ? 800 : 500); 
 
     } else {
         errors++;
@@ -149,7 +143,19 @@ function handleAnswer(event) {
         
         if (gameMode === 'free') {
             rightInfoDisplay.textContent = `Errores: ${errors}`; 
-            if (nextQuestionButton) nextQuestionButton.style.display = 'block';
+            // Tras ver los colores, ventana con la explicación del error; al cerrarla, siguiente pregunta
+            const datos = { numero: currentNumber, unidad: currentPowerOfTen, correcta: correctAnswer, elegida: selectedAnswer };
+            autoAdvanceTimeout = setTimeout(() => {
+                autoAdvanceTimeout = null;
+                if (!gameStarted || gameMode !== 'free') return;
+                Explicacion.mostrar(datos).then(() => {
+                    if (!gameStarted || gameMode !== 'free') return;
+                    resetOptionStyles();
+                    feedbackMessage.style.opacity = '0';
+                    generateNewQuestion();
+                    enableOptions(true);
+                });
+            }, 900);
         }
     }
 
@@ -176,6 +182,7 @@ function generateNewQuestion() {
     const powerOfTen = q.unidad;
     currentUnit = q.nombreUnidad;
     currentNumber = q.numero;
+    currentPowerOfTen = powerOfTen;
 
     correctAnswer = Math.round(currentNumber / powerOfTen) * powerOfTen;
 

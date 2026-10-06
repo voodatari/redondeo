@@ -6,6 +6,7 @@ let errors = 0;
 let correctAnswer = 0;
 let currentNumber = 0;
 let currentUnit = '';
+let currentPowerOfTen = 10; // 10, 100, 1000… (para la explicación del error)
 let gameMode = null; // 'chrono', 'sudden_death', 'free'
 let gameStarted = false; 
 let initialTime = 60; 
@@ -66,15 +67,6 @@ playerNameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') setP
 
 // Controles durante el juego
 optionButtons.forEach(button => { button.addEventListener('click', handleAnswer); });
-nextQuestionButton.addEventListener('click', () => {
-    if (!gameStarted) return;
-    playSound(clickSound);
-    resetOptionStyles();
-    feedbackMessage.style.opacity = '0';
-    generateNewQuestion();
-    enableOptions(true);
-    nextQuestionButton.style.display = 'none'; 
-});
 mainMenuButton.addEventListener('click', async () => {
     playSound(clickSound);
     if (isTeacherMode() && currentStudent && gameStarted) {

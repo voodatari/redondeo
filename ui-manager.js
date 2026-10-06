@@ -198,9 +198,6 @@ function enableOptions(enable) {
     optionButtons.forEach(button => {
         button.disabled = !enable;
     });
-    if (!enable && gameMode === 'free' && nextQuestionButton) {
-         nextQuestionButton.style.display = 'none';
-    }
 }
 
 function resetOptionStyles() {
@@ -226,5 +223,4 @@ function resetGameStats() {
     feedbackMessage.textContent = ''; 
     resetOptionStyles(); 
 
-    if (nextQuestionButton) nextQuestionButton.style.display = 'none';
 }
