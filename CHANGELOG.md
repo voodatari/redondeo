@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## [2.0.6] - 2026-10-10
+- **Móvil, sin scroll en ninguna ventana:** nuevo movil.js: cada panel (Más opciones —en sus tres dificultades—, tiempo, opciones, nombre, ranking) reduce su letra lo necesario hasta que todo cabe en el alto visible, con margen abajo. Sirve para cualquier móvil.
+- **Toques más rápidos en iPhone:** se quita el retardo de toque (touch-action), el logo animado deja de pintar su sombra mientras hay otra ventana encima, y el fondo en el móvil dibuja un fotograma de cada dos y sin sombras ni conexiones.
+- **Música en el menú:** Safari solo deja arrancar el audio con «touchend» o «click»; ahora se prueban ambos hasta que suena, así la música del menú empieza con el primer toque.
+- **Recta numérica:** la etiqueta del punto medio (y las de los extremos y el punto verde) se amplían sobre su sitio; en Safari se iban hacia la diagonal.
+
 ## [2.0.5] - 2026-10-10
 - Quitada una franja gris que aparecía en la esquina superior izquierda del menú (el brillo del botón de música se escapaba de su botón).
 - Móvil: logo algo menor y con menos zoom en su animación (ya no roza la tarjeta); subtítulo de la explicación con voz más pequeño; en «Más opciones» los botones «Restablecer» y «Listo» quedan fijos abajo y no se cortan; en el juego las respuestas y «Volver al menú» ya no se solapan y el sitio de «¡Correcto!» está siempre reservado, así que nada se mueve al aparecer.

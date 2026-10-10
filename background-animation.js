@@ -95,7 +95,7 @@ function setupCanvas() {
             ctx.rotate(this.currentRotation);
             
             // Sombra constante (sin ella en modo ligero: el desenfoque es lo que más cuesta)
-            ctx.shadowBlur = document.documentElement.classList.contains('ligero') ? 0 : 15;
+            ctx.shadowBlur = (document.documentElement.classList.contains('ligero') || document.documentElement.classList.contains('movil')) ? 0 : 15;
             ctx.shadowColor = this.color.replace(')', ', 0.3)');
             ctx.shadowOffsetX = 1;
             ctx.shadowOffsetY = 1;
@@ -164,7 +164,10 @@ function setupCanvas() {
         }
     }
 
+    let salto = 0;
     function animate() {
+        // en el móvil se dibuja un fotograma de cada dos (deja libre el hilo para atender los toques)
+        if (document.documentElement.classList.contains('movil') && (salto++ & 1)) { requestAnimationFrame(animate); return; }
         time++;
         
         // Gradiente más interesante y dinámico
@@ -194,7 +197,7 @@ function setupCanvas() {
             e.draw();
         });
         
-        drawConnections();
+        if (!document.documentElement.classList.contains('movil')) drawConnections();
 
         requestAnimationFrame(animate);
     }

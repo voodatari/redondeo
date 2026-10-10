@@ -67,7 +67,7 @@ html.movil .panel-actions { flex-wrap: nowrap; }
 html.movil .chip-button { min-height: 52px; font-size: 1.15em; padding: 10px 20px; }
 
 /* ---------- Selección de tiempo ---------- */
-html.movil #time-selection-area h2 { font-size: 2.2em; }
+html.movil #time-selection-area h2 { font-size: 1.85em; }
 html.movil #time-selection-area .time-button { padding: 22px 14px; font-size: 1.7em; }
 html.movil #time-selection-area .free-start-button { padding: 26px 14px; font-size: 2em; }
 html.movil .time-footer .chip-button { min-height: 60px; font-size: 1.25em; }
@@ -162,3 +162,36 @@ html.movil.corta .ex-card { font-size: 1.1em; }
 html.movil.corta .ex-box .dialog-actions .ex-alt, html.movil.corta .ex-box .dialog-actions .ex-ok { padding: 12px 6px; font-size: 1.05em; }
 html.movil.corta #time-selection-area .free-start-button { padding: 18px 12px; font-size: 1.7em; }
 }
+
+/* ---------- Ajuste automático: los paneles se miden en em y movil.js reduce su letra hasta que todo cabe sin scroll ---------- */
+@media (orientation: portrait) {
+html.movil .panel, html.movil #time-selection-area, html.movil #player-name-area, html.movil #ranking-area {
+    padding: 1.1em .9em; max-height: calc(var(--alto, 100dvh) - 28px); overflow-y: auto; }
+html.movil .settings-list { gap: .6em; margin-top: .6em; }
+html.movil .setting-row { padding: .75em .9em; gap: .8em; }
+html.movil .perf-switch { width: 3.4em; height: 1.9em; }
+html.movil .perf-switch::after { top: .2em; left: .2em; width: 1.5em; height: 1.5em; }
+html.movil .setting-row[aria-pressed="true"] .perf-switch::after { transform: translateX(1.5em); }
+html.movil .deslizador3 button { padding: .75em .1em; }
+html.movil .segmented button { padding: .7em .1em; }
+html.movil .op-unidades button { padding: .55em 0; }
+html.movil .op-extras { gap: .4em; margin-top: .5em; }
+html.movil .op-extras .setting-row { padding: .35em .8em; }
+html.movil .op-ranking { padding: .4em .8em; margin-top: .5em; }
+html.movil .panel-actions { margin-top: .6em; gap: .5em; }
+html.movil #options-area .panel-actions { position: static; margin: .6em 0 0; padding: 0; background: none; }
+html.movil #options-area .panel-actions .chip-button, html.movil #options-area .panel-actions .mode-button { min-height: 2.9em; padding: .5em .6em; font-size: 1.1em; }
+html.movil .chip-button { min-height: 2.8em; }
+html.movil .time-footer { margin-top: .7em; gap: .5em; }
+html.movil .time-footer .chip-button { min-height: 2.8em; }
+html.movil #time-selection-area .time-button { padding: .55em .5em; margin-bottom: .45em; }
+html.movil #time-selection-area .free-start-button { padding: .7em .5em; }
+html.movil .modal .mode-button { padding: .6em .5em; }
+html.movil .modal h2 { margin: 0 0 .25em; }
+html.movil .op-bloque { margin-top: .5em; }
+}
+
+/* ---------- Rendimiento: el logo animado con sombra bajo otras ventanas hacía lentos los toques en iPhone ---------- */
+html, body, button, .setting-row, .chip-button, .mode-button, .option-button { touch-action: manipulation; }
+html.movil #game-logo { filter: none; will-change: transform, opacity; }
+body:has(.modal[style*="display: flex"]:not(#mode-selection-modal)) #game-logo { animation-play-state: paused; }

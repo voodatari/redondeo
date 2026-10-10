@@ -161,9 +161,9 @@ button.ig-punto:hover { transform: scale(1.4); }
 .ig-recta .ex-etq { opacity: 0.35; transition: opacity 0.4s, fill 0.4s; }
 .ig-recta .ex-etq.bien { fill: var(--ink); }
 .ig-recta.r-izq .ex-etq[data-v="izq"], .ig-recta.r-der .ex-etq[data-v="der"] { opacity: 1; }
-.ig-recta.r-ahora-izq .ex-etq[data-v="izq"], .ig-recta.r-ahora-der .ex-etq[data-v="der"] { fill: var(--primary); animation: igLatidoSvg 0.8s ease-in-out 2; transform-box: fill-box; transform-origin: center; }
+.ig-recta.r-ahora-izq .ex-etq[data-v="izq"], .ig-recta.r-ahora-der .ex-etq[data-v="der"] { fill: var(--primary); animation: igLatidoSvg 0.8s ease-in-out 2; }
 .ig-recta.r-mitad .ex-mitad, .ig-recta.r-mitad .ex-etq-mitad { opacity: 1; }
-.ig-recta.r-mitad .ex-etq-mitad { animation: igLatidoSvg 0.8s ease-in-out 2; transform-box: fill-box; transform-origin: center; }
+.ig-recta.r-mitad .ex-etq-mitad { animation: igLatidoSvg 0.8s ease-in-out 2; }
 .ig-recta.r-num .ex-pin, .ig-recta.r-num .ex-zona { opacity: 1; }
 .ig-recta.ver .ex-pin { animation: none; }
 .ig-recta.ver.r-num .ex-pin { animation: igPop 0.5s both; }
@@ -171,7 +171,7 @@ button.ig-punto:hover { transform: scale(1.4); }
 .ig-recta.ver.r-num .ex-arco { opacity: 1; stroke-dasharray: 600; stroke-dashoffset: 600; animation: igTrazo 1.2s 0.3s ease forwards; }
 .ig-recta.r-fin .ex-punto-bien, .ig-recta.r-fin .ex-check, .ig-recta.r-fin .ex-aspa, .ig-recta.r-fin .ex-guia-mal, .ig-recta.r-fin .ex-etq-mal { opacity: 1; }
 .ig-recta.r-fin .ex-etq.bien { fill: var(--success-dark); opacity: 1; }
-.ig-recta.r-fin .ex-punto-bien { animation: igLatidoSvg 0.8s ease-in-out 2; transform-box: fill-box; transform-origin: center; }
+.ig-recta.r-fin .ex-punto-bien { animation: igLatidoSvg 0.8s ease-in-out 2; }
 @keyframes igLatidoSvg { 50% { transform: scale(1.25); } }
 .ig-morado { color: var(--violet-dark) !important; }
 

@@ -248,16 +248,21 @@ function playBGM(file, loop = true) {
 
 // Los navegadores bloquean el audio hasta que el usuario interactúa con la página:
 // con la primera pulsación o tecla se reanuda la música que quedó bloqueada.
+/* iOS/Safari solo permite arrancar el audio dentro de «touchend» o «click» (no basta «pointerdown»): se prueban todos y los
+   escuchadores se quitan cuando la música ya suena */
+var EVENTOS_DESBLOQUEO = ['pointerdown', 'touchend', 'click', 'keydown'];
 function unlockAudio() {
-    document.removeEventListener('pointerdown', unlockAudio, true);
-    document.removeEventListener('keydown', unlockAudio, true);
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});   // el bucle sin cortes
-    if (isMusicOn && currentBGM && currentBGM.paused) {
-        currentBGM.play().catch(e => console.log("Autoplay resume error:", e));
+    if (isMusicOn) {
+        if (currentBGM && currentBGM.paused) currentBGM.play().catch(e => console.log("Autoplay resume error:", e));
+        else if (!currentBGM && typeof modeSelectionModal !== 'undefined' && modeSelectionModal && modeSelectionModal.style.display === 'flex') playBGM('titulo.mp3');
     }
+    setTimeout(function () {
+        var suena = isMusicOn && currentBGM && !currentBGM.paused && (!audioCtx || audioCtx.state === 'running');
+        if (suena || !isMusicOn) EVENTOS_DESBLOQUEO.forEach(function (ev) { document.removeEventListener(ev, unlockAudio, true); });
+    }, 400);
 }
-document.addEventListener('pointerdown', unlockAudio, true);
-document.addEventListener('keydown', unlockAudio, true);
+EVENTOS_DESBLOQUEO.forEach(function (ev) { document.addEventListener(ev, unlockAudio, true); });
 
 function updateMuteButton() {
     muteToggleButton.textContent = isMusicOn ? '🔊' : '🔇';

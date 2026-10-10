@@ -215,13 +215,13 @@ window.Explicacion = (function () {
             var v = lo + k * paso, x = X(v), mayor = v % U === 0;
             s += '<line class="ex-marca' + (mayor ? ' mayor' : '') + '" x1="' + x + '" y1="' + (Y - (mayor ? 14 : 7)) + '" x2="' + x + '" y2="' + (Y + (mayor ? 14 : 7)) + '"/>';
             if (mayor) {
-                s += '<text class="ex-etq' + (v === C ? ' bien' : '') + '" data-v="' + (v === c.abajo ? 'izq' : v === c.arriba ? 'der' : '') + '" x="' + x + '" y="' + (Y + 40) + '">' + f(v) + (v === C ? '<tspan class="ex-check"> ✓</tspan>' : '') + '</text>';
+                s += '<text class="ex-etq' + (v === C ? ' bien' : '') + '" data-v="' + (v === c.abajo ? 'izq' : v === c.arriba ? 'der' : '') + '" style="transform-origin:' + x + 'px ' + (Y + 34) + 'px" x="' + x + '" y="' + (Y + 40) + '">' + f(v) + (v === C ? '<tspan class="ex-check"> ✓</tspan>' : '') + '</text>';
             }
         }
 
         /* la mitad (línea morada discontinua) */
         s += '<line class="ex-mitad" x1="' + xm + '" y1="' + (Y - 30) + '" x2="' + xm + '" y2="' + (Y + 22) + '"/>';
-        s += '<text class="ex-etq-mitad" x="' + xm + '" y="' + (Y + 40) + '">' + f(c.mitad) + '</text>';
+        s += '<text class="ex-etq-mitad" style="transform-origin:' + xm + 'px ' + (Y + 34) + 'px" x="' + xm + '" y="' + (Y + 40) + '">' + f(c.mitad) + '</text>';
 
         /* flecha verde del número a la respuesta correcta */
         var xN = X(N), xC = X(C);
@@ -229,7 +229,7 @@ window.Explicacion = (function () {
             var cx = (xN + xC) / 2, alto = Math.min(56, 26 + Math.abs(xC - xN) * 0.25);
             s += '<path class="ex-arco" marker-end="url(#ex-punta)" d="M' + xN + ',' + (Y - 12) + ' Q' + cx + ',' + (Y - 12 - alto * 2) + ' ' + (xC + (xC > xN ? -3 : 3)) + ',' + (Y - 12) + '"/>';
         }
-        s += '<circle class="ex-punto-bien" cx="' + xC + '" cy="' + Y + '" r="9"/>';
+        s += '<circle class="ex-punto-bien" style="transform-origin:' + xC + 'px ' + Y + 'px" cx="' + xC + '" cy="' + Y + '" r="9"/>';
 
         /* respuesta elegida: aspa roja y etiqueta debajo */
         var tW = '✗ tu respuesta: ' + f(W);
