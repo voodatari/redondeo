@@ -82,6 +82,7 @@ HTML, CSS y JavaScript sin frameworks ni compilación: lo que hay en el reposito
 | `pdf-import.js` | Lectura del PDF de Séneca con pdf.js |
 | `explicacion.js` | Explicación escrita de un fallo (y los textos y la recta que comparte con la animada) |
 | `infografia.js` | Explicación animada y narrada: guion de pasos, escena y reproductor |
+| `movil.css`, `escala.js` | Aspecto en teléfonos en vertical (tamaños, alturas) y escala |
 | `voz.js`, `voz-worker.js`, `voz-ui.js`, `voz.css` | La voz: caché y reproducción, Piper en un Web Worker, opciones y estilos |
 | `piper/` | Motor ONNX Runtime, fonemizador espeak-ng y modelo de voz |
 

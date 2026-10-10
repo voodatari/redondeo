@@ -67,6 +67,8 @@ window.Escala = (function (global) {
         raiz.classList.toggle('movil', dispositivo().movil);
         raiz.classList.toggle('escala-fija', activa);
         raiz.style.setProperty('--escala', String(factor()));
+        raiz.style.setProperty('--alto', (global.innerHeight / factor()) + 'px');   // alto visible en las unidades de lo que lleva zoom
+        raiz.classList.toggle('corta', global.innerHeight / factor() < 650);                  // teléfono de pantalla baja
         var b = document.getElementById('scale-toggle-button');
         if (b) {
             b.setAttribute('aria-pressed', String(activa));

@@ -1,5 +1,14 @@
 # Historial de cambios
 
+## [2.0.4] - 2026-10-10
+Móvil en vertical: nueva hoja de estilos movil.css (solo teléfonos con la pantalla en vertical; ordenador y horizontal no cambian).
+- **Todo más grande y sin huecos:** menú (letras de los botones mucho mayores, logo que ocupa el hueco libre), selección de tiempo, juego, opciones y «Más opciones», explicaciones y avisos. El alto disponible es el que deja visible la barra de Safari (ya no se corta el botón de música).
+- **Juego:** el texto «a la unidad de… más cercana» ya no queda tapado por la primera respuesta; las tres respuestas y «Volver» se reparten el alto.
+- **Explicación con voz:** Atrás / Pausa / Repetir / Adelante en una cuadrícula 2×2 (ya no se pegan al borde), subtítulo más grande, las dos respuestas una bajo otra y la escena se amplía para aprovechar el espacio.
+- **Explicación solo texto:** letra mayor con interlineado normal, y se desactiva el autoajuste de texto de iOS (hacía la letra pequeña y el interlineado enorme).
+- **Opciones:** letra mayor, interruptores más grandes, sin «Escala fija» (no sirve en el móvil); en «Más opciones» los cuatro extras van en una columna y ya no se salen de la pantalla.
+- Pantallas bajas (iPhone SE, Android pequeños): versión algo más compacta.
+
 ## [2.0.3] - 2026-10-10
 - **iPhone:** si Safari muestra la página en una ventana virtual más ancha que la pantalla (todo salía diminuto), ahora se compensa ampliando menús, ventanas, juego y explicaciones lo que se había encogido (escala = ventana / pantalla), con las alturas ajustadas. En una ventana normal no cambia nada.
 

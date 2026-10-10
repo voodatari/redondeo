@@ -157,9 +157,9 @@ window.Infografia = (function () {
     /* si no cabe, se reduce todo (nunca se corta). Se mide con todo visible y con rectángulos reales (en Safari,
        scrollWidth no avisaba del desborde con zoom) */
     P.encajar = function () {
-        var raiz = this.raiz, l = this.lienzo, z = 1, piezas = [this.pildorasEl, this.fila, this.recta, this.nota];
+        var raiz = this.raiz, l = this.lienzo, z = document.documentElement.classList.contains('movil') ? 2.4 : 1, piezas = [this.pildorasEl, this.fila, this.recta, this.nota];
         l.classList.add('medir');
-        l.style.zoom = 1;
+        l.style.zoom = z;
         function nocabe() {
             var r = raiz.getBoundingClientRect(), lr = l.getBoundingClientRect();
             if (lr.height > r.height + 1) return true;
