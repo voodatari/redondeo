@@ -11,13 +11,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=20261006b">
-    <script src="rendimiento.js?v=20261006b"></script>
-    <script src="escala.js?v=20261006b"></script>
+    <link rel="stylesheet" href="style.css?v=20261010r2n">
+    <link rel="stylesheet" href="voz.css?v=20261010r2n">
+    <script src="rendimiento.js?v=20261010r2n"></script>
+    <script src="escala.js?v=20261010r2n"></script>
 </head>
 <body>
 
 <canvas id="fondoCanvas"></canvas>
+
+<!-- carga de la voz (voz-ui.js) -->
+<div id="voz-carga" class="voz-carga oculto" role="status" aria-live="polite"><span id="voz-carga-texto"></span><span class="barra"><i id="voz-carga-barra"></i></span></div>
 
 <div class="container game-content-hidden" id="game-container">
     <div id="current-player-chip" style="display:none;"></div>
@@ -66,6 +70,7 @@
     </div>
 
     <div id="mode-selection-area">
+        <div class="cinta-version" aria-hidden="true"><span>v.2.0</span></div>
         <h2>Elige tu desafío</h2>
         <p id="mode-hint">Selecciona cómo quieres practicar:</p>
         <button id="mode-chrono-button" class="mode-button btn-chrono"><span class="btn-icon">⏱️</span> Contrarreloj</button>
@@ -88,8 +93,8 @@
 <div id="player-name-modal" class="modal" style="display:none;">
     <div id="player-name-area">
         <h2 id="player-name-title"></h2>
-        <p>Introduce tu nombre para guardar tu puntuación:</p>
-        <input type="text" id="player-name-input" placeholder="Tu nombre o alias" maxlength="15" required>
+        <p>Escribe tu nombre para guardar tu puntuación (si lo dejas vacío, juegas como «Anónimo»):</p>
+        <input type="text" id="player-name-input" placeholder="Tu nombre o alias (opcional)" maxlength="15">
         <button id="set-name-button" class="mode-button">Empezar el Desafío</button>
     </div>
 </div>
@@ -100,6 +105,24 @@
         <button class="close-x" data-close="settings-modal" aria-label="Cerrar">✕</button>
         <h2>⚙️ Opciones</h2>
         <div class="settings-list">
+            <button id="voz-explica-button" class="setting-row" type="button" aria-pressed="true">
+                <span class="setting-text">
+                    <strong>🎬 Explicación con voz</strong>
+                    <small>Al fallar, una infografía animada y narrada lo explica paso a paso. Desactivada: solo texto.</small>
+                </span>
+                <span class="perf-switch" aria-hidden="true"></span>
+            </button>
+            <div class="setting-row setting-seg">
+                <span class="setting-text">
+                    <strong>🧑‍🏫 Explicar los fallos</strong>
+                    <small>En contrarreloj y muerte súbita el juego se pausa (también el reloj) mientras se explica.</small>
+                </span>
+                <div class="deslizador3" id="explicar-seg" role="radiogroup" aria-label="Explicar los fallos">
+                    <button type="button" data-explicar="no">🚫 No</button>
+                    <button type="button" data-explicar="practica" title="Solo en la práctica libre">🎯 Práctica</button>
+                    <button type="button" data-explicar="siempre">✅ Siempre</button>
+                </div>
+            </div>
             <button id="dots-toggle-button" class="setting-row" type="button" aria-pressed="true">
                 <span class="setting-text">
                     <strong>Puntos de miles</strong>
@@ -316,21 +339,24 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20261006b"></script>
-<script src="audio.js?v=20261006b"></script>
-<script src="background-animation.js?v=20261006b"></script>
-<script src="ajustes.js?v=20261006b"></script>
-<script src="opciones.js?v=20261006b"></script>
-<script src="dom-references.js?v=20261006b"></script>
-<script src="effects.js?v=20261006b"></script>
-<script src="ui-manager.js?v=20261006b"></script>
-<script src="ranking.js?v=20261006b"></script>
-<script src="teacher-data.js?v=20261006b"></script>
-<script src="pdf-import.js?v=20261006b"></script>
-<script src="teacher-ui.js?v=20261006b"></script>
-<script src="explicacion.js?v=20261006b"></script>
-<script src="game-logic.js?v=20261006b"></script>
-<script src="main.js?v=20261006b"></script>
+<script src="config.js?v=20261010r2n"></script>
+<script src="audio.js?v=20261010r2n"></script>
+<script src="background-animation.js?v=20261010r2n"></script>
+<script src="ajustes.js?v=20261010r2n"></script>
+<script src="opciones.js?v=20261010r2n"></script>
+<script src="dom-references.js?v=20261010r2n"></script>
+<script src="effects.js?v=20261010r2n"></script>
+<script src="ui-manager.js?v=20261010r2n"></script>
+<script src="ranking.js?v=20261010r2n"></script>
+<script src="teacher-data.js?v=20261010r2n"></script>
+<script src="pdf-import.js?v=20261010r2n"></script>
+<script src="teacher-ui.js?v=20261010r2n"></script>
+<script src="explicacion.js?v=20261010r2n"></script>
+<script src="voz.js?v=20261010r2n"></script>
+<script src="voz-ui.js?v=20261010r2n"></script>
+<script src="infografia.js?v=20261010r2n"></script>
+<script src="game-logic.js?v=20261010r2n"></script>
+<script src="main.js?v=20261010r2n"></script>
 
 </body>
 </html>

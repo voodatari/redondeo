@@ -5,7 +5,8 @@
        A medida   de x a y cifras (de 2 a 7). Sin ranking.
        Progresiva empieza con 2 cifras y cada 5 aciertos suma una, hasta 7.
                   Tiene ranking propio.
-   - Extras: a qué se redondea, opciones trampa, más casos con el 5 y sin
+   - Extras: a qué se redondea, opciones trampa, más casos con el 5, más casos
+     con llevada (9 que, al subir, se lleva una; a veces varios 9 seguidos) y sin
      cifra resaltada. Cambian la dificultad, así que con cualquiera de
      ellos cambiado la partida pasa a ser «A medida» (sin ranking): así
      los rankings solo comparan partidas con las mismas reglas.
@@ -27,7 +28,7 @@ window.Opciones = (function () {
     };
     var TODAS = [1, 2, 3, 4, 5, 6];
 
-    var FABRICA = { dificultad: 'estandar', min: 2, max: 5, unidades: TODAS.slice(), trampa: false, cinco: false, sinResaltar: false };
+    var FABRICA = { dificultad: 'estandar', min: 2, max: 5, unidades: TODAS.slice(), trampa: false, cinco: false, nueves: false, sinResaltar: false };
 
     function leer() {
         try {
@@ -41,7 +42,7 @@ window.Opciones = (function () {
                 var u = o.unidades.filter(function (e) { return TODAS.indexOf(e) >= 0; });
                 if (u.length) r.unidades = u.sort();
             }
-            r.trampa = !!o.trampa; r.cinco = !!o.cinco; r.sinResaltar = !!o.sinResaltar;
+            r.trampa = !!o.trampa; r.cinco = !!o.cinco; r.nueves = !!o.nueves; r.sinResaltar = !!o.sinResaltar;
             return r;
         } catch (e) { return copia(FABRICA); }
     }
@@ -66,7 +67,7 @@ window.Opciones = (function () {
 
     /* ---------- clasificación (rankings) ---------- */
     function extrasDeFabrica() {
-        return efectivas().length === disponibles().length && !op.trampa && !op.cinco && !op.sinResaltar;
+        return efectivas().length === disponibles().length && !op.trampa && !op.cinco && !op.nueves && !op.sinResaltar;
     }
     /* 'estandar' | 'progresiva' | 'medida' */
     function clave() {
@@ -96,6 +97,7 @@ window.Opciones = (function () {
         if (efectivas().length !== disponibles().length) partes.push('a ' + efectivas().map(function (e) { return UNIDADES[e].abrev; }).join(', '));
         if (op.trampa) partes.push('trampa');
         if (op.cinco) partes.push('más 5');
+        if (op.nueves) partes.push('más llevadas');
         if (op.sinResaltar) partes.push('sin resaltar');
         return partes.join(' · ').slice(0, 80);
     }
@@ -116,6 +118,9 @@ window.Opciones = (function () {
         }
         return r;
     }
+
+    /* cambia la cifra de la posición p (0 = unidades) por v */
+    function ponerCifra(n, p, v) { var u = Math.pow(10, p); return n + (v - Math.floor(n / u) % 10) * u; }
 
     /* {numero, unidad, exponente, cifras, nombreUnidad} */
     function pregunta(aciertos) {
@@ -144,6 +149,14 @@ window.Opciones = (function () {
                 var pos = Math.pow(10, e - 1);
                 var cifra = Math.floor(numero / pos) % 10;
                 numero += (5 - cifra) * pos;
+            }
+            /* más casos con llevada: la cifra marcada es un 9 (a veces también las de su izquierda: 99, 999…) y la que
+               decide es 5 o más, así que al subir el 9 pasa a 10 y se lleva una (puede aparecer una cifra nueva delante) */
+            if (op.nueves && Math.random() < 0.45) {
+                var nueves = 1;
+                while (e + nueves <= n - 1 && Math.random() < 0.4) nueves++;
+                for (var k = 0; k < nueves; k++) numero = ponerCifra(numero, e + k, 9);
+                if (Math.floor(numero / Math.pow(10, e - 1)) % 10 < 5) numero = ponerCifra(numero, e - 1, op.cinco && Math.random() < 0.3 ? 5 : entero(5, 9));
             }
         }
         return { numero: numero, unidad: Math.pow(10, e), exponente: e, cifras: String(numero).length, nombreUnidad: UNIDADES[e].nombre };
@@ -216,9 +229,10 @@ window.Opciones = (function () {
             '</div>' +
 
             '<div class="settings-list op-extras">' +
-                fila('trampa', '🪤 Opciones trampa', 'Las respuestas incorrectas son los errores típicos: redondear hacia el otro lado o a la cifra de al lado.') +
-                fila('cinco', '5️⃣ Más casos con el 5', 'Salen más números en los que la cifra que decide es un 5.') +
-                fila('sinResaltar', '🔍 Sin cifra resaltada', 'No se marca la cifra a la que se redondea: hay que localizarla.') +
+                fila('trampa', '🪤 Opciones trampa', 'Las incorrectas son errores típicos: el otro lado o la cifra de al lado.') +
+                fila('cinco', '5️⃣ Más casos con el 5', 'Más números en los que la cifra que decide es un 5.') +
+                fila('nueves', '9️⃣ Más casos con llevada', 'Más 9 (a veces seguidos) que, al subir, se llevan una.') +
+                fila('sinResaltar', '🔍 Sin cifra resaltada', 'No se marca la cifra: hay que localizarla.') +
             '</div>' +
 
             '<p class="op-ranking ' + (cuenta ? 'si' : 'no') + '">' + (cuenta

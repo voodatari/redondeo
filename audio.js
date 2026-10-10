@@ -74,7 +74,8 @@ class BGMTrack {
         this.waitTimer = null;          // esperando a la pista decodificada para empezar sin cortes
         this.el = new Audio(this.src);
         this.el.loop = loop;
-        this.el.volume = volume;
+        this.el.volume = volume * nivelMusica;
+        this.gain = null;
         if (loop && getAudioContext()) this.prepareGapless();
     }
 
@@ -141,7 +142,8 @@ class BGMTrack {
         source.loopStart = loopStart;
         source.loopEnd = loopEnd;
         const gain = ctx.createGain();
-        gain.gain.value = this.volume;
+        gain.gain.value = this.volume * nivelMusica;
+        this.gain = gain;
         source.connect(gain).connect(ctx.destination);
 
         const el = this.el;
@@ -164,7 +166,57 @@ class BGMTrack {
         source.start(0, loopStart);
         this.source = source;
     }
+
+    /* volumen actual × nivel de la música (baja mientras habla la voz de las explicaciones) */
+    aplicarNivel() {
+        try { this.el.volume = this.volume * nivelMusica; } catch (e) {}
+        if (this.gain) this.gain.gain.value = this.volume * nivelMusica;
+    }
 }
+
+/* Nivel de la música (0..1): lo baja la voz de las explicaciones con un fundido y lo devuelve al terminar */
+let nivelMusica = 1;
+function aplicarNivelMusica() { if (currentBGM && currentBGM.aplicarNivel) currentBGM.aplicarNivel(); }
+
+/* Sonido: lo que usan la voz y la infografía (mismo funcionamiento que en Silabeador).
+   atenuar(true) devuelve una promesa que se cumple cuando la música YA ha bajado: la voz espera a eso; la subida solo
+   empieza al terminar de hablar. mantenerBajo(true) la deja baja durante toda una explicación. */
+window.Sonido = (function () {
+    var NIVEL_BAJO = 0.15, rampa = null, soltar = null, bloqueada = false;
+    var rampaPromesa = null, rampaObjetivo = null, resolverRampa = null;
+    function irA(objetivo, ms) {
+        if (rampa) cancelAnimationFrame(rampa);
+        if (resolverRampa) { resolverRampa(); resolverRampa = null; }
+        if (Math.abs(nivelMusica - objetivo) < 0.005) { rampa = null; rampaObjetivo = null; return Promise.resolve(); }
+        var inicio = nivelMusica, t0 = performance.now();
+        rampaObjetivo = objetivo;
+        rampaPromesa = new Promise(function (ok) {
+            resolverRampa = ok;
+            function paso(ahora) {
+                var t = Math.min(1, (ahora - t0) / ms);
+                var suave = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                nivelMusica = inicio + (objetivo - inicio) * suave;
+                aplicarNivelMusica();
+                if (t < 1) rampa = requestAnimationFrame(paso);
+                else { rampa = null; rampaObjetivo = null; resolverRampa = null; ok(); }
+            }
+            rampa = requestAnimationFrame(paso);
+        });
+        return rampaPromesa;
+    }
+    function atenuar(on, rapido) {
+        clearTimeout(soltar);
+        if (on) {
+            if (rampaObjetivo === NIVEL_BAJO && rampaPromesa) return rampaPromesa;
+            return irA(NIVEL_BAJO, rapido ? 70 : 450);
+        }
+        if (!bloqueada) soltar = setTimeout(function () { irA(1, rapido ? 150 : 650); }, rapido ? 0 : 400);
+        return Promise.resolve();
+    }
+    function mantenerBajo(on) { bloqueada = !!on; return on ? atenuar(true, false) : atenuar(false, false); }
+    function efecto(nombre) { if (nombre === 'click') playSound(clickSound); }
+    return { atenuar: atenuar, mantenerBajo: mantenerBajo, efecto: efecto };
+})();
 
 // Función para detener la música
 function stopBGM() {

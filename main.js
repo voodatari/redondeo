@@ -52,13 +52,8 @@ modeFreeButton.addEventListener('click', () => { playSound(clickSound); showFree
 // });
 
 function setPlayerName() {
-    if (!playerNameInput.value.trim()) {
-        restartAnimation(playerNameInput, 'shake');
-        showToast('Escribe tu nombre para empezar', 'warn');
-        playerNameInput.focus();
-        return;
-    }
-    playerName = playerNameInput.value.trim().substring(0, 15);
+    // el nombre es opcional: sin nombre se juega como «Anónimo» (también en el ranking)
+    playerName = playerNameInput.value.trim().substring(0, 15) || 'Anónimo';
     playerNameModal.style.display = 'none';
     launchGame(gameMode);
 }

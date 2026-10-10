@@ -1,0 +1,220 @@
+/* =========================================================
+   Voz (Piper) · indicador de carga, opciones e infografía animada con voz
+   (la misma que en Silabeador, con el diseño de Redondeo: panel blanco, tinta azul, Fredoka)
+   ========================================================= */
+.voz-carga {
+    position: fixed; top: max(10px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 450;
+    display: flex; flex-direction: column; gap: 5px; align-items: stretch; min-width: 240px; padding: 8px 14px;
+    border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); color: var(--ink);
+    font-size: 0.85em; font-weight: 600; pointer-events: none; transition: opacity 0.4s;
+}
+.voz-carga.oculto { display: none; }
+.voz-carga.fuera { opacity: 0; }
+.voz-carga .barra { height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.voz-carga .barra i { display: block; height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, var(--primary), var(--violet)); transition: width 0.25s; }
+.voz-carga.error { color: var(--danger-dark); }
+
+/* opciones: fila con selector de tres posiciones */
+.setting-row.setting-seg { flex-direction: column; align-items: stretch; gap: 8px; cursor: default; }
+.setting-row.setting-seg:hover { background: var(--panel-soft); }
+.setting-seg .chips { justify-content: flex-start; margin: 0; }
+.setting-seg .chips button { font-weight: 600; border: none; cursor: pointer; font-size: 0.92em; }
+
+/* ---------- Infografía animada con voz ---------- */
+.ig-box { position: relative; max-width: 760px; width: 100%; height: min(640px, 100%); display: flex; flex-direction: column; gap: 8px; text-align: center; padding: 16px 20px 16px; max-height: 100%; overflow: hidden; }
+.ig-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-right: 42px; min-height: 26px; }
+.ig-claqueta { font-family: var(--font-display); font-weight: 700; color: var(--primary-dark); font-size: 1.1em; }
+.ig-voz-estado { font-size: 0.85em; color: var(--muted); }
+.ig-puntos { display: flex; gap: 6px; margin-left: auto; }
+button.ig-punto { position: relative; width: 10px; height: 10px; border: none; padding: 0; border-radius: 50%; background: var(--line); cursor: pointer; transition: background 0.3s, transform 0.2s; }
+button.ig-punto::after { content: ''; position: absolute; inset: -7px; }
+button.ig-punto:hover { transform: scale(1.4); }
+.ig-punto.hecho { background: var(--success); }
+.ig-punto.ahora { background: var(--primary); box-shadow: 0 0 0 4px rgba(79, 107, 255, 0.25); }
+
+.ig-escenario { position: relative; flex: 1 1 auto; min-height: 230px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 6px 0; }
+.ig-lienzo { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+
+.ig-pildoras { display: flex; gap: 12px; justify-content: center; flex-wrap: nowrap; white-space: nowrap; min-height: 48px; }
+.ig-pill { opacity: 0; display: inline-flex; align-items: center; gap: 8px; padding: 7px 18px; border-radius: 999px; font-weight: 700; font-size: 1.25em; background: #fff; }
+.ig-pill b { font-family: var(--font-display); font-size: 1.45em; }
+.ig-pill.mal { color: var(--danger-dark); box-shadow: inset 0 0 0 2px #fecaca, 0 3px 0 #fecaca; }
+.ig-pill.bien { color: var(--success-dark); box-shadow: inset 0 0 0 2px #bbf7d0, 0 3px 0 #bbf7d0; }
+.ig-pill.ver { animation: igPop 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both; }
+.ig-pill.ver.late { animation: igPop 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both, igLatido 0.7s 0.5s ease-in-out 2; }
+
+.ig-fila { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: nowrap; white-space: nowrap; }
+.ig-num { display: inline-flex; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 3.4em; line-height: 1.2; color: var(--ink); opacity: 0; }
+.ig-num.ver { opacity: 1; }
+.ig-d { display: inline-block; padding: 0 3px; margin: 0 1px; border-radius: 12px; transition: background 0.35s, color 0.35s, box-shadow 0.35s, transform 0.35s; }
+.ig-num.ver .ig-d.entra, .ig-num.ver .ig-punto-miles.entra { animation: igCifra 0.45s cubic-bezier(0.2, 1.5, 0.4, 1) both; }
+.ig-punto-miles { display: inline-block; margin: 0 1px; }
+.ig-d.oro { color: #7a4b00; background: linear-gradient(180deg, #ffe38a, var(--gold)); box-shadow: 0 4px 0 #d49b06; transform: translateY(-3px); }
+.ig-d.decide { color: var(--violet-dark); box-shadow: inset 0 0 0 4px var(--violet); animation: igLatido 0.9s ease-in-out 2 !important; }
+.ig-d.cero { color: #9aa3c4; }
+.ig-d.cambia { color: var(--success-dark); background: #e8fbef; box-shadow: 0 4px 0 #b6ebc8; }
+.ig-flecha { font-size: 2.2em; color: var(--primary); opacity: 0; transform: translateX(-10px); transition: opacity 0.35s, transform 0.35s; }
+.ig-flecha.ver { opacity: 1; transform: none; }
+
+.ig-nota { min-height: 38px; display: inline-flex; align-items: center; padding: 4px 16px; border-radius: 999px; font-weight: 700; opacity: 0; transform: scale(0.8); }
+.ig-nota.ver { opacity: 1; transform: none; transition: opacity 0.3s, transform 0.4s cubic-bezier(0.2, 1.5, 0.4, 1); }
+.ig-nota.oro { color: #7a4b00; background: #fff6d6; box-shadow: inset 0 0 0 2px var(--gold); }
+.ig-nota.sube { color: var(--success-dark); background: #e8fbef; box-shadow: inset 0 0 0 2px #86efac; }
+.ig-nota.queda { color: var(--primary-dark); background: var(--panel-soft); box-shadow: inset 0 0 0 2px #c7d2fe; }
+
+.ig-recta { width: 100%; max-width: 560px; opacity: 0; transform: translateY(10px); }
+.ig-recta.ver { opacity: 1; transform: none; transition: opacity 0.5s, transform 0.5s; }
+.ig-recta .ex-svg { width: 100%; height: auto; display: block; }
+.ig-recta.ver .ex-arco { stroke-dasharray: 600; stroke-dashoffset: 600; animation: igTrazo 1.2s 0.5s ease forwards; }
+.ig-recta.ver .ex-pin { animation: igPop 0.5s 0.2s both; }
+
+.ig-insignia { font-family: var(--font-display); font-weight: 700; font-size: 2.6em; color: var(--success-dark); min-height: 56px; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0.4); }
+.ig-insignia.ver { opacity: 1; transform: none; transition: opacity 0.4s, transform 0.5s cubic-bezier(0.2, 1.6, 0.4, 1); text-shadow: 0 4px 0 #bbf7d0; }
+
+/* para medir el tamaño final (encajar) todo cuenta como visible */
+.ig-lienzo.medir .ig-num, .ig-lienzo.medir .ig-flecha, .ig-lienzo.medir .ig-recta, .ig-lienzo.medir .ig-insignia, .ig-lienzo.medir .ig-nota, .ig-lienzo.medir .ig-pill { transition: none !important; }
+
+.ig-subtitulo { min-height: 78px; max-width: 680px; margin: 0 auto; font-size: 1.12em; line-height: 1.5; color: var(--ink); opacity: 0; transform: translateY(6px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ig-subtitulo.ver { opacity: 1; transform: none; transition: opacity 0.4s, transform 0.4s; }
+.ig-subtitulo b { font-family: var(--font-display); }
+.ig-subtitulo small { color: var(--muted); }
+.ig-mal { color: var(--danger-dark) !important; }
+.ig-bien { color: var(--success-dark) !important; }
+.ig-azul { color: var(--primary-dark) !important; }
+.ig-subtitulo .ex-mal { color: var(--danger-dark); }
+.ig-subtitulo .ex-bien { color: var(--success-dark); }
+.ig-subtitulo .ex-morado { color: var(--violet-dark); }
+
+/* navegación */
+.ig-nav { display: flex; justify-content: center; gap: 10px; flex-wrap: nowrap; }
+.ig-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; border: none; border-radius: 14px; background: var(--panel-soft); color: var(--ink); font-weight: 600; cursor: pointer; box-shadow: 0 3px 0 var(--line); white-space: nowrap; transition: transform 0.15s, background 0.2s; }
+.ig-btn:hover:not(:disabled) { background: #e6e9fb; transform: translateY(-1px); }
+.ig-btn:disabled { opacity: 0.35; cursor: default; }
+.ig-acciones { margin-top: 2px; display: flex; justify-content: center; }
+.ig-ok { min-width: 300px; display: inline-flex !important; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
+.ig-ico { display: inline-flex; align-items: center; justify-content: center; }
+.ig-ico svg { width: 1.15em; height: 1.15em; fill: currentColor; display: block; }
+.ig-ico svg.trazo { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+@keyframes igPop { from { opacity: 0; transform: scale(0.5) translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes igCifra { from { opacity: 0; transform: translateY(0.5em) scale(0.5); } to { opacity: 1; transform: none; } }
+@keyframes igLatido { 50% { transform: scale(1.12); } }
+@keyframes igTrazo { to { stroke-dashoffset: 0; } }
+
+@media (max-width: 640px) {
+    .ig-box { padding: 12px 12px 14px; }
+    .ig-escenario { min-height: 180px; }
+    .ig-num { font-size: 2.5em; }
+    .ig-subtitulo { font-size: 1em; min-height: 96px; }
+    .ig-nav { gap: 6px; }
+    .ig-btn { flex: 1 1 0; padding: 10px 4px; font-size: 1.1em; }
+    .ig-nav .ig-txt { display: none; }
+    .ig-nav .ig-ico svg { width: 1.4em; height: 1.4em; }
+    .ig-ok { min-width: 0; width: 100%; }
+}
+
+/* explicación solo texto: las dos respuestas más grandes y la errónea sin tachar (se leía mal el número) */
+.ex-pill { font-size: 1.15em; padding: 7px 16px; }
+.ex-pill b { font-size: 1.35em; }
+.ex-pill.mal b { text-decoration: none; }
+
+/* el resultado (flecha + número final) no ocupa sitio hasta que aparece: así el número empieza centrado; para medir el
+   tamaño final (encajar) sí cuenta */
+.ig-flecha, .ig-num.despues { display: none; }
+.ig-flecha.ver, .ig-lienzo.medir .ig-flecha { display: inline-block; }
+.ig-num.despues.ver, .ig-lienzo.medir .ig-num.despues { display: inline-flex; }
+/* solo texto: las dos respuestas caben en una fila */
+.ex-pill { font-size: 1.02em; padding: 6px 12px; }
+.ex-pill b { font-size: 1.3em; }
+
+/* centrado vertical en cada paso: el aviso «sube / se queda» y la recta no ocupan sitio hasta que aparecen (para medir el
+   tamaño final, encajar, sí cuentan). Aparecen con animación (no con transición: vienen de display none) */
+.ig-nota { display: none; }
+.ig-nota.ver { display: inline-flex; animation: igPop 0.45s cubic-bezier(0.2, 1.5, 0.4, 1) both; }
+.ig-recta { display: none; }
+.ig-recta.ver { display: block; animation: igSube 0.5s ease both; }
+.ig-lienzo.medir .ig-nota { display: inline-flex; }
+.ig-lienzo.medir .ig-recta { display: block; }
+@keyframes igSube { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* «Más opciones»: los cuatro extras en una cuadrícula 2×2 (con cuatro filas, la ventana pedía scroll) */
+.op-extras { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px; }
+.op-extras .setting-row { margin: 0; align-items: flex-start; padding: 10px 12px; gap: 8px; }
+.op-extras .setting-text strong { font-size: 0.95em; }
+.op-extras .setting-text small { font-size: 0.8em; line-height: 1.3; }
+.op-extras .perf-switch { margin-top: 2px; }
+
+/* «Explicar los fallos»: deslizador de tres posiciones en una sola línea (la pastilla se desliza a la opción elegida) */
+.deslizador3 { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 999px; background: #e3e7f6; box-shadow: inset 0 2px 4px rgba(29, 34, 64, 0.08); }
+.deslizador3::before {
+    content: ''; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / 3); border-radius: 999px;
+    background: var(--ink); box-shadow: 0 3px 8px rgba(29, 34, 64, 0.3);
+    transform: translateX(calc(var(--pos, 2) * 100%)); transition: transform 0.3s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.deslizador3 button { position: relative; z-index: 1; border: none; background: none; padding: 8px 4px; border-radius: 999px; font-weight: 700; font-size: 0.9em; color: var(--muted); cursor: pointer; white-space: nowrap; transition: color 0.25s; }
+.deslizador3 button.active { color: #fff; }
+.deslizador3 button:not(.active):hover { color: var(--ink); }
+
+/* recta animada por partes: al principio solo el eje y las marcas; luego izquierda, derecha, mitad, número y resultado */
+.ig-recta .ex-zona, .ig-recta .ex-mitad, .ig-recta .ex-etq-mitad, .ig-recta .ex-arco, .ig-recta .ex-punto-bien,
+.ig-recta .ex-aspa, .ig-recta .ex-guia-mal, .ig-recta .ex-etq-mal, .ig-recta .ex-pin, .ig-recta .ex-check { opacity: 0; transition: opacity 0.45s; }
+.ig-recta .ex-etq { opacity: 0.35; transition: opacity 0.4s, fill 0.4s; }
+.ig-recta .ex-etq.bien { fill: var(--ink); }
+.ig-recta.r-izq .ex-etq[data-v="izq"], .ig-recta.r-der .ex-etq[data-v="der"] { opacity: 1; }
+.ig-recta.r-ahora-izq .ex-etq[data-v="izq"], .ig-recta.r-ahora-der .ex-etq[data-v="der"] { fill: var(--primary); animation: igLatidoSvg 0.8s ease-in-out 2; transform-box: fill-box; transform-origin: center; }
+.ig-recta.r-mitad .ex-mitad, .ig-recta.r-mitad .ex-etq-mitad { opacity: 1; }
+.ig-recta.r-mitad .ex-etq-mitad { animation: igLatidoSvg 0.8s ease-in-out 2; transform-box: fill-box; transform-origin: center; }
+.ig-recta.r-num .ex-pin, .ig-recta.r-num .ex-zona { opacity: 1; }
+.ig-recta.ver .ex-pin { animation: none; }
+.ig-recta.ver.r-num .ex-pin { animation: igPop 0.5s both; }
+.ig-recta.ver .ex-arco { animation: none; }
+.ig-recta.ver.r-num .ex-arco { opacity: 1; stroke-dasharray: 600; stroke-dashoffset: 600; animation: igTrazo 1.2s 0.3s ease forwards; }
+.ig-recta.r-fin .ex-punto-bien, .ig-recta.r-fin .ex-check, .ig-recta.r-fin .ex-aspa, .ig-recta.r-fin .ex-guia-mal, .ig-recta.r-fin .ex-etq-mal { opacity: 1; }
+.ig-recta.r-fin .ex-etq.bien { fill: var(--success-dark); opacity: 1; }
+.ig-recta.r-fin .ex-punto-bien { animation: igLatidoSvg 0.8s ease-in-out 2; transform-box: fill-box; transform-origin: center; }
+@keyframes igLatidoSvg { 50% { transform: scale(1.25); } }
+.ig-morado { color: var(--violet-dark) !important; }
+
+/* llevadas: la cifra gira al cambiar y el «+1» se posa sobre la de su izquierda */
+.ig-d.gira { animation: igGira 0.55s ease both !important; }
+@keyframes igGira { 0% { transform: rotateX(0); } 50% { transform: rotateX(90deg); } 100% { transform: rotateX(0); } }
+.ig-d.recibe { position: relative; box-shadow: inset 0 0 0 3px #86efac; border-radius: 12px; }
+.ig-d.recibe::after {
+    content: '+1'; position: absolute; left: 50%; top: -0.62em; transform: translateX(-50%); font-size: 0.36em; line-height: 1;
+    padding: 2px 6px; border-radius: 8px; color: #fff; background: var(--success); box-shadow: 0 2px 0 var(--success-dark);
+    animation: igSalto 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes igSalto { from { opacity: 0; transform: translate(60%, 0.6em) scale(0.5); } to { opacity: 1; transform: translateX(-50%); } }
+.ex-llevadas { margin: 4px 0 4px; padding-left: 18px; font-size: 0.95em; }
+.ex-llevadas li { margin: 2px 0; }
+
+/* «Más opciones»: cada extra con el título en una sola línea, la descripción debajo y el interruptor abajo a la derecha */
+.op-extras .setting-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; text-align: left; }
+.op-extras .setting-text { display: flex; flex-direction: column; gap: 3px; }
+.op-extras .setting-text strong { white-space: nowrap; font-size: 0.9em; }
+.op-extras .perf-switch { align-self: flex-end; margin-top: auto; }
+
+/* en la infografía las animaciones de entrada de la recta (de style.css, pensadas para la versión escrita) se quitan: aquí
+   cada elemento aparece cuando se nombra, con las clases r-izq … r-fin */
+.ig-recta .ex-zona, .ig-recta .ex-punto-bien, .ig-recta .ex-aspa, .ig-recta .ex-pin, .ig-recta .ex-arco { animation: none; }
+.ig-recta.r-num .ex-zona { opacity: 1; }
+.ig-recta.ver.r-num .ex-arco { opacity: 1; stroke-dasharray: 600; stroke-dashoffset: 600; animation: igTrazo 1.2s 0.3s ease forwards; }
+.ig-recta.ver.r-num .ex-pin { opacity: 1; animation: igPop 0.5s both; }
+.ig-recta.r-fin .ex-aspa, .ig-recta.r-fin .ex-punto-bien { opacity: 1; animation: igPop 0.5s both; }
+.ig-recta.r-fin .ex-punto-bien { animation: igPop 0.5s both, igLatidoSvg 0.8s 0.5s ease-in-out 2; }
+
+/* explicación escrita: las llevadas son una lista con viñetas (sin los círculos numerados de los pasos) */
+.ex-pasos .ex-llevadas { list-style: none; padding: 0; margin: 6px 0 6px; counter-reset: none; }
+.ex-pasos .ex-llevadas li { padding: 4px 8px 4px 20px; counter-increment: none; position: relative; background: rgba(79, 107, 255, 0.07); border-radius: 10px; margin: 4px 0; }
+.ex-pasos .ex-llevadas li::before { content: '↳'; position: absolute; left: 4px; top: 4px; width: auto; height: auto; background: none; box-shadow: none; color: var(--primary); font-weight: 700; display: block; }
+
+/* Cinta diagonal «v.2.0» en la esquina superior derecha de la tarjeta del menú principal (del borde de arriba al borde derecho,
+   recortada por la esquina redondeada de la tarjeta) */
+.cinta-version { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 5; }
+.cinta-version span {
+    position: absolute; top: 31px; right: -76px; width: 220px; height: 30px; line-height: 30px; text-align: center; transform: rotate(53deg);
+    font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: 1.5px; color: #5b3a00;
+    background: linear-gradient(90deg, #ffe38a, var(--gold) 55%, #f59e0b);
+    border-top: 2px dashed rgba(91, 58, 0, 0.35); border-bottom: 2px dashed rgba(91, 58, 0, 0.35);
+    box-shadow: 0 3px 8px rgba(29, 34, 64, 0.35);
+}

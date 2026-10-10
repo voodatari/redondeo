@@ -76,15 +76,96 @@ window.Explicacion = (function () {
         return bW + ' no es ' + unidad + ' más cercana a ' + bN + '. Fíjate en los pasos:';
     }
 
+    /* LLEVADA: al subir, si la cifra marcada es un 9 pasa a 10 (se pone 0 y se lleva una a la izquierda); si la de su
+       izquierda también es 9, le pasa lo mismo, y así seguido. Si se acaban las cifras, aparece un 1 delante. */
+    function llevada(c) {
+        if (c.d < 5) return null;
+        var k = 0, largo = String(c.numero).length;
+        while (c.e + k < largo && cifraEn(c.numero, c.e + k) === 9) k++;
+        if (!k) return null;
+        var nueva = c.e + k >= largo;
+        var texto = k === 1
+            ? 'El 9 pasa a 10: se pone 0 y se lleva una a la cifra de su izquierda' + (nueva ? ', que es un 1 nuevo delante.' : '.')
+            : 'Hay ' + k + ' nueves seguidos: cada 9 pasa a 10, se pone 0 y se lleva una a la cifra de su izquierda' +
+              (nueva ? '; al final aparece un 1 nuevo delante.' : '.');
+        var voz = k === 1
+            ? 'El nueve pasa a diez: se pone un cero y se lleva una a la cifra de su izquierda' + (nueva ? ', que es un uno nuevo delante.' : '.')
+            : 'Hay ' + k + ' nueves seguidos: cada nueve pasa a diez, se pone un cero y se lleva una a la cifra de su izquierda' +
+              (nueva ? '. Al final aparece un uno nuevo delante.' : '.');
+        return { nueves: k, nueva: nueva, texto: texto, voz: voz };
+    }
+
+    /* SUMAR UNO CON LLEVADAS, cifra a cifra (para contarlo despacio): la cifra marcada más uno; si era 9, pasa a 10: se
+       escribe 0 y se lleva una a la de su izquierda, y así hasta una cifra que no sea 9 (o hasta delante del todo). */
+    function pasosLlevada(c) {
+        var N = c.numero, largo = String(N).length, p = c.e, out = [], primera = true;
+        for (;;) {
+            if (p >= largo) {
+                out.push({ p: p, nueva: true,
+                    texto: 'No quedan más cifras: la que nos llevamos se escribe delante, un <b>1</b>.',
+                    voz: 'Ya no quedan más cifras: la una que nos llevamos se escribe delante, un uno.' });
+                break;
+            }
+            var d = cifraEn(N, p), mas = primera ? 'más 1' : 'más la que nos llevamos', masVoz = primera ? 'más uno' : 'más la una que nos llevamos';
+            if (d === 9) {
+                out.push({ p: p, de: 9, a: 0, lleva: true,
+                    texto: 'El <b>9</b> de las ' + CIFRA[p] + ', ' + mas + ', son <b>10</b>: se escribe <b>0</b> y nos llevamos una.',
+                    voz: 'El nueve de las ' + CIFRA[p] + ', ' + masVoz + ', son diez: escribimos un cero, y nos llevamos una a la cifra de su izquierda.' });
+                p++; primera = false;
+                continue;
+            }
+            out.push({ p: p, de: d, a: d + 1,
+                texto: 'El <b>' + d + '</b> de las ' + CIFRA[p] + ', ' + mas + ', son <b>' + (d + 1) + '</b>.',
+                voz: 'El ' + d + ' de las ' + CIFRA[p] + ', ' + masVoz + ', son ' + (d + 1) + '.' });
+            break;
+        }
+        return out;
+    }
+
+    /* LA RECTA, contada así (ejemplo: 34 a las decenas): «Como nos piden que redondeemos a las decenas, en el extremo
+       izquierdo estará la decena actual de 34, 30, y en el derecho, la siguiente, 40. El punto medio entre ambas es 35.
+       Por tanto, 34 está más cerca de 30 que de 40, y redondeado a las decenas sería 30.»
+       Cada frase: lo que se lee (cap), lo que se dice (voz) y qué se anima en la recta (paso). */
+    function frasesRecta(c) {
+        var N = c.numero, A = c.abajo, B = c.arriba, M = c.mitad, C = c.correcta, e = c.e;
+        var plural = CIFRA[e], una = UNIDAD[e];
+        var bN = '<b>' + f(N) + '</b>', bA = '<b>' + f(A) + '</b>', bB = '<b>' + f(B) + '</b>', bM = '<b class="ex-morado">' + f(M) + '</b>', bC = '<b class="ex-bien">' + f(C) + '</b>';
+        if (N === A) return [
+            { paso: 'izq', cap: 'Nos piden redondear a las <b>' + plural + '</b>: ' + bN + ' ya es ' + una.replace(/^la /, 'una ') + ' exacta.',
+              voz: 'Como nos piden que redondeemos a las ' + plural + ', miramos dónde cae ' + N + ' en la recta: justo sobre una marca.' },
+            { paso: 'fin', cap: 'Ya está redondeado: ' + bC + '.', voz: 'Ya está redondeado, así que el resultado es el mismo, ' + C + '.' }
+        ];
+        var cerca = N === M
+            ? { cap: bN + ' está justo en el punto medio y, en ese caso, se redondea hacia arriba,', voz: N + ' está justo en el punto medio y, en ese caso, se redondea hacia arriba,' }
+            : N < M
+                ? { cap: 'Por tanto, ' + bN + ' está más cerca de ' + bA + ' que de ' + bB + ',', voz: 'Por tanto, ' + N + ' está más cerca de ' + A + ' que de ' + B + ',' }
+                : { cap: 'Por tanto, ' + bN + ' está más cerca de ' + bB + ' que de ' + bA + ',', voz: 'Por tanto, ' + N + ' está más cerca de ' + B + ' que de ' + A + ',' };
+        return [
+            { paso: 'izq', cap: 'Nos piden redondear a las <b>' + plural + '</b>: en el extremo izquierdo está ' + una + ' actual de ' + bN + ', que es ' + bA + ',',
+              voz: 'Como nos piden que redondeemos a las ' + plural + ', en el extremo izquierdo está ' + una + ' actual de ' + N + ', que es ' + A + ',' },
+            { paso: 'der', cap: 'y a la derecha, la siguiente, ' + bB + '.', voz: 'y en el derecho, la siguiente, ' + B + '.' },
+            { paso: 'mitad', cap: 'El punto medio entre ambas es ' + bM + '.', voz: 'El punto medio entre ambas es ' + M + '.' },
+            { paso: 'num', cap: cerca.cap, voz: cerca.voz },
+            { paso: 'fin', cap: 'y redondeado a las ' + plural + ' sería ' + bC + '.', voz: 'y redondeado a las ' + plural + ' sería ' + C + '.' }
+        ];
+    }
+
     /* ---------- cómo se hace ---------- */
     function pasos(c) {
         var e = c.e, sube = c.d >= 5;
-        var lleva = sube && c.cifraUnidad === 9 ? ' <small>(el 9 pasa a 10: se pone 0 y se lleva una a la izquierda)</small>' : '';
+        var ll = sube ? pasosLlevada(c) : [];
+        var tercero = !sube
+            ? 'Cambia por <b>ceros</b> todas las cifras de su derecha: <b class="ex-bien">' + f(c.correcta) + '</b>'
+            : ll.length === 1
+                ? 'Cambia por <b>ceros</b> todas las cifras de su derecha y suma <b>1</b> a la cifra de las ' + CIFRA[e] + ': ' + ll[0].texto.replace(/\.$/, '') + '. Queda <b class="ex-bien">' + f(c.correcta) + '</b>'
+                : 'Cambia por <b>ceros</b> todas las cifras de su derecha y suma <b>1</b> a la cifra de las ' + CIFRA[e] + ', con llevadas:' +
+                  '<ul class="ex-llevadas">' + ll.map(function (x) { return '<li>' + x.texto + '</li>'; }).join('') + '</ul>' +
+                  'Queda <b class="ex-bien">' + f(c.correcta) + '</b>';
         return '<ol class="ex-pasos">' +
-            '<li>Busca la cifra de las <b>' + CIFRA[e] + '</b>: <span class="ex-badge oro">' + c.cifraUnidad + '</span></li>' +
-            '<li>Mira la de su derecha: <span class="ex-badge decide">' + c.d + '</span> → ' +
-                (sube ? '<b class="ex-bien">5 o más: sube</b>' : '<b class="ex-azul">menos de 5: se queda</b>') + lleva + '</li>' +
-            '<li>Cambia por <b>ceros</b> todas las cifras de su derecha: <b class="ex-bien">' + f(c.correcta) + '</b></li>' +
+            '<li>Busca la cifra a la que nos piden redondear, las <b>' + CIFRA[e] + '</b>. En este caso es este <span class="ex-badge oro">' + c.cifraUnidad + '</span></li>' +
+            '<li>Mira la cifra de la derecha: como es un <span class="ex-badge decide">' + c.d + '</span>, ' +
+                (sube ? '<b class="ex-bien">y con 5 o más se sube</b>' : 'que es menor que 5, <b class="ex-azul">se queda como está</b>') + '.</li>' +
+            '<li>' + tercero + '</li>' +
             '</ol>';
     }
 
@@ -134,7 +215,7 @@ window.Explicacion = (function () {
             var v = lo + k * paso, x = X(v), mayor = v % U === 0;
             s += '<line class="ex-marca' + (mayor ? ' mayor' : '') + '" x1="' + x + '" y1="' + (Y - (mayor ? 14 : 7)) + '" x2="' + x + '" y2="' + (Y + (mayor ? 14 : 7)) + '"/>';
             if (mayor) {
-                s += '<text class="ex-etq' + (v === C ? ' bien' : '') + '" x="' + x + '" y="' + (Y + 40) + '">' + f(v) + (v === C ? ' ✓' : '') + '</text>';
+                s += '<text class="ex-etq' + (v === C ? ' bien' : '') + '" data-v="' + (v === c.abajo ? 'izq' : v === c.arriba ? 'der' : '') + '" x="' + x + '" y="' + (Y + 40) + '">' + f(v) + (v === C ? '<tspan class="ex-check"> ✓</tspan>' : '') + '</text>';
             }
         }
 
@@ -175,6 +256,9 @@ window.Explicacion = (function () {
     }
 
     function pie(c) {
+        return frasesRecta(c).map(function (x) { return x.cap; }).join(' ');
+    }
+    function pieAntiguo(c) {
         var N = c.numero, bN = '<b>' + f(N) + '</b>';
         if (N === c.correcta) return bN + ' cae justo sobre una marca grande: ya está redondeado.';
         var entre = bN + ' está entre <b>' + f(c.abajo) + '</b> y <b>' + f(c.arriba) + '</b>. ';
@@ -186,14 +270,19 @@ window.Explicacion = (function () {
 
     /* ---------- ventana ---------- */
     /* datos: { numero, unidad (10, 100…), correcta, elegida } */
-    function mostrar(datos) {
+    /* todo lo que hace falta saber del caso (también lo usa la explicación animada, infografia.js) */
+    function calcular(datos) {
         var U = datos.unidad, e = Math.round(Math.log10(U)), N = datos.numero;
         var abajo = Math.floor(N / U) * U;
-        var c = {
+        return {
             numero: N, unidad: U, e: e, correcta: datos.correcta, elegida: datos.elegida,
             abajo: abajo, arriba: abajo + U, mitad: abajo + U / 2,
             cifraUnidad: cifraEn(N, e), d: cifraEn(N, e - 1)
         };
+    }
+
+    function mostrar(datos) {
+        var c = calcular(datos), N = c.numero, e = c.e;
 
         return new Promise(function (resolve) {
             var previo = document.activeElement;
@@ -205,13 +294,11 @@ window.Explicacion = (function () {
                     '<div class="ex-cabecera">' +
                         '<div class="ex-emoji">🤔</div>' +
                         '<h3 id="ex-title" class="ex-titulo">' + TITULOS[Math.floor(Math.random() * TITULOS.length)] + '</h3>' +
-                        '<p class="ex-enunciado">Redondear <b>' + f(N) + '</b> a ' + UNIDAD[e] + ' más cercana</p>' +
                         '<div class="ex-respuestas">' +
                             '<span class="ex-pill mal">✗ Tu respuesta <b>' + f(c.elegida) + '</b></span>' +
                             '<span class="ex-pill bien">✓ Correcta <b>' + f(c.correcta) + '</b></span>' +
                         '</div>' +
                     '</div>' +
-                    '<section class="ex-card ex-por-que"><h4>🔍 ¿Por qué no es ' + f(c.elegida) + '?</h4><p>' + porQue(c) + '</p></section>' +
                     '<section class="ex-card ex-como"><h4>💡 Así se hace</h4>' + transformacion(c) + pasos(c) + '</section>' +
                     '<section class="ex-card ex-recta"><h4>📏 En la recta numérica</h4>' + recta(c) + '<p class="ex-pie">' + pie(c) + '</p></section>' +
                     '<div class="dialog-actions"><button type="button" class="mode-button btn-free ex-ok">¡Entendido! Siguiente ➜</button></div>' +
@@ -240,6 +327,10 @@ window.Explicacion = (function () {
         });
     }
 
-    return { mostrar: mostrar };
+    return {
+        mostrar: mostrar,
+        interno: { calcular: calcular, porQue: porQue, pasos: pasos, transformacion: transformacion, recta: recta, pie: pie,
+                   cifrasHtml: cifrasHtml, cifraEn: cifraEn, llevada: llevada, pasosLlevada: pasosLlevada, frasesRecta: frasesRecta, UNIDAD: UNIDAD, CIFRA: CIFRA, TITULOS: TITULOS }
+    };
 
 })();

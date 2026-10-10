@@ -122,40 +122,26 @@ function handleAnswer(event) {
         if (correctBtn) correctBtn.classList.add('correct-answer');
         
         selectedButton.classList.add('incorrect-choice');
-        
-        if (gameMode === 'sudden_death') {
-             // Termina el juego inmediatamente por error.
-             if (timerInterval) clearInterval(timerInterval); 
-             setTimeout(() => endGame(true), 1500); 
-             return; 
-        }
-        
-        if (gameMode === 'chrono') {
+        if (gameMode === 'free') rightInfoDisplay.textContent = 'Errores: ' + errors;
+        const datos = { numero: currentNumber, unidad: currentPowerOfTen, correcta: correctAnswer, elegida: selectedAnswer };
+
+        if (VozUI.explicarEn(gameMode)) {
+            // explicación del fallo (animada con voz o solo texto, según Opciones): el juego se pausa por completo
+            explicarFallo(datos);
+        } else if (gameMode === 'sudden_death') {
+            // Termina el juego inmediatamente por error.
+            if (timerInterval) clearInterval(timerInterval);
+            setTimeout(() => endGame(true), 1500);
+            return;
+        } else {
             autoAdvanceTimeout = setTimeout(() => {
-                if (gameStarted) { 
+                if (gameStarted) {
                     resetOptionStyles();
                     feedbackMessage.style.opacity = '0';
                     generateNewQuestion();
                     enableOptions(true);
                 }
-            }, 500); 
-        }
-        
-        if (gameMode === 'free') {
-            rightInfoDisplay.textContent = `Errores: ${errors}`; 
-            // Tras ver los colores, ventana con la explicación del error; al cerrarla, siguiente pregunta
-            const datos = { numero: currentNumber, unidad: currentPowerOfTen, correcta: correctAnswer, elegida: selectedAnswer };
-            autoAdvanceTimeout = setTimeout(() => {
-                autoAdvanceTimeout = null;
-                if (!gameStarted || gameMode !== 'free') return;
-                Explicacion.mostrar(datos).then(() => {
-                    if (!gameStarted || gameMode !== 'free') return;
-                    resetOptionStyles();
-                    feedbackMessage.style.opacity = '0';
-                    generateNewQuestion();
-                    enableOptions(true);
-                });
-            }, 900);
+            }, gameMode === 'free' ? 900 : 500);
         }
     }
 
@@ -165,6 +151,33 @@ function handleAnswer(event) {
     if (gameMode === 'free' && !correctAnswer) { 
         centerTimeDisplay.textContent = `Tiempo: ${formatTime(totalTimeElapsed)}`;
     }
+}
+
+/* EXPLICAR UN FALLO. Mientras dura la explicación el juego se detiene por completo (también los relojes).
+   - Contrarreloj: el reloj se para y al cerrar sigue con el tiempo que quedaba.
+   - Muerte súbita: la partida ya ha terminado, así que suena ya la música de fin (la de la pantalla de resultados, que
+     sigue sin cortes) y al cerrar se muestran los resultados; el tiempo de la explicación no cuenta.
+   - Práctica libre: el reloj de la pregunta ya estaba parado; al cerrar, otra pregunta.
+   La música se queda baja mientras se explica y sube suave al cerrar (infografia.js / audio.js). */
+async function explicarFallo(datos) {
+    const modo = gameMode, termina = modo === 'sudden_death';
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    stopQuestionTimer();
+    const animada = VozUI.explicacion();
+    if (animada) Infografia.preparar(datos);       // empieza a sintetizar la narración mientras se ve la respuesta correcta
+    if (termina && isMusicOn) { stopBGM(); playBGM('fin.mp3'); }
+    const t0 = Date.now();
+    await new Promise(r => { autoAdvanceTimeout = setTimeout(r, 900); });
+    autoAdvanceTimeout = null;
+    if (!gameStarted || gameMode !== modo) return;
+    await (animada ? Infografia.mostrar(datos) : Explicacion.mostrar(datos));
+    if (!gameStarted || gameMode !== modo) return;
+    if (termina) { startTime += Date.now() - t0; endGame(true); return; }
+    if (modo === 'chrono') startChronoTimer();
+    resetOptionStyles();
+    feedbackMessage.style.opacity = '0';
+    generateNewQuestion();
+    enableOptions(true);
 }
 
 function generateNewQuestion() {
@@ -235,8 +248,11 @@ function endGame(isSuddenDeathError = false) {
     }
     stopFreeModeTimer();
     stopQuestionTimer(); // Detiene el temporizador de pregunta
-    stopBGM();
-    if (isMusicOn) playBGM('fin.mp3');
+    // si ya suena la música de fin (se puso al explicar el fallo que terminó la partida), sigue sin cortes
+    if (!(currentBGM && currentBGM.src.indexOf('fin.mp3') !== -1 && !currentBGM.paused)) {
+        stopBGM();
+        if (isMusicOn) playBGM('fin.mp3');
+    }
 
     resetOptionStyles();
     updateStreak(0);
