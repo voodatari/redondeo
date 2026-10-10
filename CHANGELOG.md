@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## [2.0.2] - 2026-10-10
+Móvil y explicación escrita.
+- **Explicación solo texto en dos vistas**, sin scroll: primero «Así se hace»; abajo, «Recta numérica» (izquierda) y «¡Entendido! Siguiente» (derecha). Al pulsar «Recta numérica» se ve «En la recta numérica» y el botón pasa a «Así se hace», para alternar.
+- **Teléfonos:** la escala fija nunca se aplica (en iPhone, con la ventana virtual de Safari, todo salía diminuto); botones del menú, selección de tiempo (Volver / Más opciones en dos botones grandes) y diálogos más grandes y cómodos para los dedos; la cabecera de la explicación se compacta.
+
 ## [2.0.1] - 2026-10-10
 - **iPhone / móvil:** el juego y la ventana de explicación aprovechan todo el alto de la pantalla (antes, en iPhone, la tarjeta quedaba pequeña en el centro y la explicación salía ancha y baja). El viewport lleva minimum-scale=1 y, si Safari muestra la página en una pantalla virtual más ancha que el teléfono, se fija el ancho físico (clase html.movil). La ventana de explicación tiene altura explícita (Safari no aplicaba min(640px, 100%)). En el juego, los botones de respuesta y el número son más grandes en pantallas estrechas.
 - **Cuenta atrás:** los números entran con un golpe de escala, sin giro: en iPhone el giro de 180° los mostraba reflejados.

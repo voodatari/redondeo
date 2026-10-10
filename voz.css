@@ -239,3 +239,57 @@ html.movil .ig-voz-estado { font-size: 0.72em; }
 /* las dos respuestas: la que aún no ha salido no ocupa sitio (la primera queda centrada); para medir el tamaño final sí cuentan */
 .ig-pill:not(.ver) { display: none; }
 .ig-lienzo.medir .ig-pill { display: inline-flex; }
+
+/* ---------- Táctil móvil: botones grandes y espacio aprovechado ---------- */
+@media (max-width: 500px) {
+    .mode-button { padding: 20px 16px; font-size: 1.4em; }
+    #time-selection-area .time-button { padding: 18px 14px; font-size: 1.3em; }
+    #time-selection-area .free-start-button { padding: 20px 14px; font-size: 1.6em; }
+    .chip-button { min-height: 48px; padding: 10px 18px; font-size: 1.05em; }
+    .time-footer { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .time-footer .time-variant { grid-column: 1 / -1; grid-row: 1; justify-self: center; font-size: 1.05em; }
+    .time-footer .back-button { grid-row: 2; justify-self: stretch; }
+    .time-footer .more-button { grid-row: 2; justify-self: stretch; }
+    .time-footer .chip-button { padding: 12px 10px; font-size: 1.05em; }
+    .dialog-actions .mode-button { min-width: 0; flex: 1 1 100%; padding: 16px 18px; font-size: 1.3em; }
+    .dialog-actions .chip-button { flex: 1 1 40%; }
+    .settings-gear { min-width: 48px; }
+    }
+
+html.movil .mode-button { padding: 20px 16px; font-size: 1.4em; }
+html.movil #time-selection-area .time-button { padding: 18px 14px; font-size: 1.3em; }
+html.movil #time-selection-area .free-start-button { padding: 20px 14px; font-size: 1.6em; }
+html.movil .chip-button { min-height: 48px; padding: 10px 18px; font-size: 1.05em; }
+html.movil .time-footer { grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+html.movil .time-footer .time-variant { grid-column: 1 / -1; grid-row: 1; justify-self: center; font-size: 1.05em; }
+html.movil .time-footer .back-button { grid-row: 2; justify-self: stretch; }
+html.movil .time-footer .more-button { grid-row: 2; justify-self: stretch; }
+html.movil .time-footer .chip-button { padding: 12px 10px; font-size: 1.05em; }
+html.movil .dialog-actions .mode-button { min-width: 0; flex: 1 1 100%; padding: 16px 18px; font-size: 1.3em; }
+html.movil .dialog-actions .chip-button { flex: 1 1 40%; }
+html.movil .settings-gear { min-width: 48px; }
+
+/* ---------- Explicación solo texto: dos vistas (Así se hace / En la recta numérica) ---------- */
+.ex-box .ex-recta { display: none; }
+.ex-box.vista-recta .ex-recta { display: block; }
+.ex-box.vista-recta .ex-como { display: none; }
+.ex-box .dialog-actions { flex-wrap: nowrap; }
+.ex-box .dialog-actions .ex-alt, .ex-box .dialog-actions .ex-ok { flex: 1 1 0; min-width: 0; width: auto; padding: 14px 10px; font-size: 1.05em; }
+html.movil .ex-box .dialog-actions .ex-alt, html.movil .ex-box .dialog-actions .ex-ok { flex: 1 1 0; min-width: 0; width: auto; padding: 16px 8px; font-size: 1.05em; }
+.ex-box .ex-como, .ex-box .ex-recta { animation-delay: 0s; }
+@media (max-width: 500px) {
+    .ex-box { min-height: calc(100dvh - 24px); display: flex; flex-direction: column; margin: 0; }
+    .ex-box .ex-card { flex: 1 1 auto; }
+    .ex-box .dialog-actions { margin-top: 12px; }
+    .ex-box .ex-emoji { display: none; }
+    .ex-box .ex-cabecera { padding: 10px 40px 10px 12px; }
+    .ex-box .ex-respuestas { display: flex; flex-wrap: nowrap; gap: 6px; justify-content: center; }
+    .ex-box .ex-pill { font-size: 0.8em; padding: 5px 8px; white-space: nowrap; }
+}
+html.movil .ex-box { min-height: calc(100dvh - 24px); display: flex; flex-direction: column; margin: 0; }
+html.movil .ex-box .ex-card { flex: 1 1 auto; }
+html.movil .ex-box .dialog-actions { margin-top: 12px; }
+html.movil .ex-box .ex-emoji { display: none; }
+html.movil .ex-box .ex-cabecera { padding: 10px 40px 10px 12px; }
+html.movil .ex-box .ex-respuestas { display: flex; flex-wrap: nowrap; gap: 6px; justify-content: center; }
+html.movil .ex-box .ex-pill { font-size: 0.8em; padding: 5px 8px; white-space: nowrap; }

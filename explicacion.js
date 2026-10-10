@@ -301,7 +301,7 @@ window.Explicacion = (function () {
                     '</div>' +
                     '<section class="ex-card ex-como"><h4>💡 Así se hace</h4>' + transformacion(c) + pasos(c) + '</section>' +
                     '<section class="ex-card ex-recta"><h4>📏 En la recta numérica</h4>' + recta(c) + '<p class="ex-pie">' + pie(c) + '</p></section>' +
-                    '<div class="dialog-actions"><button type="button" class="mode-button btn-free ex-ok">¡Entendido! Siguiente ➜</button></div>' +
+                    '<div class="dialog-actions"><button type="button" class="mode-button btn-chrono ex-alt">📏 Recta numérica</button><button type="button" class="mode-button btn-free ex-ok">¡Entendido! Siguiente ➜</button></div>' +
                 '</div>';
             document.body.appendChild(velo);
 
@@ -321,6 +321,13 @@ window.Explicacion = (function () {
                 if (ev.key === 'Escape' || ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); cerrar(); }
             }
             document.addEventListener('keydown', onKey, true);
+            /* dos vistas (para que no haga falta scroll): «Así se hace» y «En la recta numérica»; el botón de la izquierda alterna */
+            var caja = velo.querySelector('.ex-box'), alt = velo.querySelector('.ex-alt');
+            alt.addEventListener('click', function () {
+                var recta = caja.classList.toggle('vista-recta');
+                alt.textContent = recta ? '💡 Así se hace' : '📏 Recta numérica';
+                if (typeof playSound === 'function' && typeof clickSound !== 'undefined') playSound(clickSound);
+            });
             velo.querySelector('.ex-ok').addEventListener('click', cerrar);
             velo.querySelector('.ex-cerrar').addEventListener('click', cerrar);
             setTimeout(function () { var b = velo.querySelector('.ex-ok'); if (b && !cerrado) b.focus({ preventScroll: true }); }, 50);

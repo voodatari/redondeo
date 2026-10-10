@@ -48,7 +48,7 @@ window.Escala = (function (global) {
 
     function calcular() {
         var w = global.innerWidth, h = global.innerHeight;
-        if (w < ANCHO_MINIMO) return 1;
+        if (w < ANCHO_MINIMO || dispositivo().movil) return 1;      // en un teléfono nunca (aunque Safari informe de una ventana virtual ancha)
         var z = Math.min(w / REF_ANCHO, h / REF_ALTO);
         return Math.round(Math.min(MAX, Math.max(MIN, z)) * 100) / 100;
     }

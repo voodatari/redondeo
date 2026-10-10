@@ -1641,13 +1641,29 @@ html.ligero .dialog-overlay { background: rgba(6, 10, 32, 0.78); }
     .option-button { font-size: 2em; padding: 22px 16px; }
     #feedback-message { min-height: 1.6em; }
 }
-html.movil #game-container:not(.game-content-hidden) {
-    min-height: calc(100vh - 20px); min-height: calc(100dvh - 20px);
-    display: flex; flex-direction: column; justify-content: space-evenly;
-}
-html.movil body { padding: 10px; min-height: 100dvh; }
-html.movil .container { max-width: none; }
-html.movil #number-to-round { font-size: clamp(3em, 16vw, 4.6em); margin: 12px 0; }
-html.movil #options-container { gap: 18px; margin-bottom: 0; }
-html.movil .option-button { font-size: 2em; padding: 22px 16px; }
-html.movil #question-area { min-height: 0; margin-bottom: 0; }
+
+
+
+/* ===== html.movil: copia de los @media (max-width) de arriba (900, 760 y 500 px) para que valgan también cuando Safari
+   informa de una ventana virtual más ancha que el teléfono (escala.js pone la clase html.movil en los teléfonos) ===== */
+html.movil #teacher-bar { flex-wrap: wrap; }html.movil #teacher-bar { position: static; margin-bottom: 26px; justify-content: center; max-width: 100%; }html.movil #teacher-info { border-radius: 22px; justify-content: center; padding: 10px; }
+
+html.movil #ranking-area.teacher-layout {
+        display: block;
+        max-width: 440px;
+        padding: 22px 16px;
+    }html.movil .teacher-layout #revisit-options { grid-template-columns: 1fr; }
+
+html.movil .ex-box { padding: 18px 14px 16px; }html.movil .ex-cabecera { padding: 12px 38px; }html.movil .ex-titulo { font-size: 1.35em; }html.movil .ex-num { font-size: 1.6em; }html.movil .ex-card { padding: 10px 12px 12px; }html.movil .ex-box .dialog-actions .ex-ok { min-width: 0; width: 100%; }
+
+html.movil body { padding: 12px; }html.movil .container { padding: 18px 14px; max-width: none; }html.movil .summary-stats { font-size: 1em; }html.movil #number-to-round { font-size: 3em; }html.movil .header-info { font-size: 1em; gap: 6px; }html.movil .header-info span { padding: 5px 10px; }html.movil #rounding-unit { font-size: 0.95em; padding: 6px 12px; white-space: nowrap; }html.movil .panel,
+html.movil #ranking-area,
+html.movil #mode-selection-area,
+html.movil #time-selection-area,
+html.movil #player-name-area { padding: 22px 16px; }html.movil .student-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }html.movil .avatar-lg { --size: 72px; }html.movil .avatar-xl { --size: 96px; }html.movil .podium { gap: 6px; }html.movil .podium-score { font-size: 1.5em; }html.movil .rk-meta { display: none; }html.movil .panel-actions .mode-button { min-width: 0; width: 100%; }
+
+html.movil body { padding: 10px; min-height: 100vh; min-height: 100dvh; }html.movil #game-container:not(.game-content-hidden) {
+        min-height: calc(100vh - 20px); min-height: calc(100dvh - 20px);
+        display: flex; flex-direction: column; justify-content: space-evenly;
+    }html.movil #game-container h1 { font-size: 1.9em; }html.movil #question-area { min-height: 0; margin-bottom: 0; }html.movil #number-to-round { font-size: clamp(3em, 16vw, 4.6em); margin: 12px 0; }html.movil #number-to-round.long-number { font-size: clamp(2.4em, 12vw, 3.6em); }html.movil #rounding-unit { font-size: 1.05em; }html.movil #options-container { gap: 18px; margin-bottom: 0; }html.movil .option-button { font-size: 2em; padding: 22px 16px; }html.movil #feedback-message { min-height: 1.6em; }
+
