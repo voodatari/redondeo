@@ -293,3 +293,7 @@ html.movil .ex-box .ex-emoji { display: none; }
 html.movil .ex-box .ex-cabecera { padding: 10px 40px 10px 12px; }
 html.movil .ex-box .ex-respuestas { display: flex; flex-wrap: nowrap; gap: 6px; justify-content: center; }
 html.movil .ex-box .ex-pill { font-size: 0.8em; padding: 5px 8px; white-space: nowrap; }
+
+/* alturas en teléfono: se dividen por la escala (la ventana virtual de Safari se compensa con zoom) */
+html.movil .ex-box { min-height: calc((100dvh - 24px) / var(--escala, 1)); }
+html.movil .ig-box { height: calc((100dvh - 16px) / var(--escala, 1)); }

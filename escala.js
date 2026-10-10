@@ -48,12 +48,19 @@ window.Escala = (function (global) {
 
     function calcular() {
         var w = global.innerWidth, h = global.innerHeight;
-        if (w < ANCHO_MINIMO || dispositivo().movil) return 1;      // en un teléfono nunca (aunque Safari informe de una ventana virtual ancha)
+        var d = dispositivo();
+        if (d.movil) {
+            /* teléfono: escala 1; pero si Safari muestra la página en una ventana virtual más ancha que la pantalla (y todo se ve
+               pequeño), se amplía lo mismo que se ha encogido: ventana virtual / pantalla física */
+            var k = d.ancho ? w / d.ancho : 1;
+            return k > 1.15 ? Math.round(Math.min(4, k) * 100) / 100 : 1;
+        }
+        if (w < ANCHO_MINIMO) return 1;
         var z = Math.min(w / REF_ANCHO, h / REF_ALTO);
         return Math.round(Math.min(MAX, Math.max(MIN, z)) * 100) / 100;
     }
 
-    function factor() { return activa ? calcular() : 1; }
+    function factor() { return (activa || dispositivo().movil) ? calcular() : 1; }
 
     function aplicar() {
         var raiz = document.documentElement;

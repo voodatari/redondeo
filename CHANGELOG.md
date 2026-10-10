@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## [2.0.3] - 2026-10-10
+- **iPhone:** si Safari muestra la página en una ventana virtual más ancha que la pantalla (todo salía diminuto), ahora se compensa ampliando menús, ventanas, juego y explicaciones lo que se había encogido (escala = ventana / pantalla), con las alturas ajustadas. En una ventana normal no cambia nada.
+
 ## [2.0.2] - 2026-10-10
 Móvil y explicación escrita.
 - **Explicación solo texto en dos vistas**, sin scroll: primero «Así se hace»; abajo, «Recta numérica» (izquierda) y «¡Entendido! Siguiente» (derecha). Al pulsar «Recta numérica» se ve «En la recta numérica» y el botón pasa a «Así se hace», para alternar.

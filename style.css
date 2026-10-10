@@ -644,9 +644,14 @@ html.ligero .settings-gear { background: rgba(10, 20, 55, 0.85); }
 html.escala-fija #game-container,
 html.escala-fija .modal > *,
 html.escala-fija .dialog-overlay > *,
-html.escala-fija #countdown-overlay > * {
+html.escala-fija #countdown-overlay > *,
+html.movil #game-container,
+html.movil .modal > *,
+html.movil .dialog-overlay > *,
+html.movil #countdown-overlay > * {
     zoom: var(--escala, 1);
 }
+html, body { overflow-x: hidden; }
 
 @media (max-width: 900px) {
     #teacher-bar { flex-wrap: wrap; }
@@ -1667,3 +1672,6 @@ html.movil body { padding: 10px; min-height: 100vh; min-height: 100dvh; }html.mo
         display: flex; flex-direction: column; justify-content: space-evenly;
     }html.movil #game-container h1 { font-size: 1.9em; }html.movil #question-area { min-height: 0; margin-bottom: 0; }html.movil #number-to-round { font-size: clamp(3em, 16vw, 4.6em); margin: 12px 0; }html.movil #number-to-round.long-number { font-size: clamp(2.4em, 12vw, 3.6em); }html.movil #rounding-unit { font-size: 1.05em; }html.movil #options-container { gap: 18px; margin-bottom: 0; }html.movil .option-button { font-size: 2em; padding: 22px 16px; }html.movil #feedback-message { min-height: 1.6em; }
 
+
+/* teléfono: altura de la pantalla de juego dividida por la escala (ventana virtual de Safari compensada con zoom) */
+html.movil #game-container:not(.game-content-hidden) { min-height: calc((100dvh - 20px) / var(--escala, 1)); }
