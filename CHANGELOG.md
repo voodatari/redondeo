@@ -1,5 +1,9 @@
 # Historial de cambios
 
+## [2.0.5] - 2026-10-10
+- Quitada una franja gris que aparecía en la esquina superior izquierda del menú (el brillo del botón de música se escapaba de su botón).
+- Móvil: logo algo menor y con menos zoom en su animación (ya no roza la tarjeta); subtítulo de la explicación con voz más pequeño; en «Más opciones» los botones «Restablecer» y «Listo» quedan fijos abajo y no se cortan; en el juego las respuestas y «Volver al menú» ya no se solapan y el sitio de «¡Correcto!» está siempre reservado, así que nada se mueve al aparecer.
+
 ## [2.0.4] - 2026-10-10
 Móvil en vertical: nueva hoja de estilos movil.css (solo teléfonos con la pantalla en vertical; ordenador y horizontal no cambian).
 - **Todo más grande y sin huecos:** menú (letras de los botones mucho mayores, logo que ocupa el hueco libre), selección de tiempo, juego, opciones y «Más opciones», explicaciones y avisos. El alto disponible es el que deja visible la barra de Safari (ya no se corta el botón de música).

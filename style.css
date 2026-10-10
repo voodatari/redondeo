@@ -1675,3 +1675,6 @@ html.movil body { padding: 10px; min-height: 100vh; min-height: 100dvh; }html.mo
 
 /* teléfono: altura de la pantalla de juego dividida por la escala (ventana virtual de Safari compensada con zoom) */
 html.movil #game-container:not(.game-content-hidden) { min-height: calc((100dvh - 20px) / var(--escala, 1)); }
+
+/* el brillo ::after de los botones se escapaba (el botón de música no tiene position: relative) y salía como una franja en la esquina */
+#mute-toggle-button::after { display: none; }
