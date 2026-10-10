@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## [2.0.7] - 2026-10-10
+- **«¡Correcto!» se quedaba al pasar a la pregunta siguiente** (también en escritorio): una regla con !important impedía ocultarlo. Ya se oculta.
+- Móvil: «¡Correcto!» centrado verticalmente entre la unidad y la primera respuesta.
+- Móvil, «Más opciones»: el botón de cerrar ya no tapa los botones de dificultad (el título reserva su sitio) y las aclaraciones reservan siempre el espacio de la más larga, así que nada cambia de tamaño al pasar de Estándar a A medida o Progresiva.
+
 ## [2.0.6] - 2026-10-10
 - **Móvil, sin scroll en ninguna ventana:** nuevo movil.js: cada panel (Más opciones —en sus tres dificultades—, tiempo, opciones, nombre, ranking) reduce su letra lo necesario hasta que todo cabe en el alto visible, con margen abajo. Sirve para cualquier móvil.
 - **Toques más rápidos en iPhone:** se quita el retardo de toque (touch-action), el logo animado deja de pintar su sombra mientras hay otra ventana encima, y el fondo en el móvil dibuja un fotograma de cada dos y sin sombras ni conexiones.

@@ -298,8 +298,8 @@ h1 {
     line-height: 1.6em;
     transition: opacity 0.2s;
 }
-.feedback-correct { color: var(--success-dark); opacity: 1 !important; }
-.feedback-incorrect { color: var(--danger); opacity: 1 !important; }
+.feedback-correct { color: var(--success-dark); }
+.feedback-incorrect { color: var(--danger); }   /* la opacidad la pone ui-manager.js: con !important el cartel se quedaba al pasar a la pregunta siguiente */
 
 #main-menu-button {
     --btn: var(--gray);

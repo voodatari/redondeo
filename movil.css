@@ -86,7 +86,7 @@ html.movil #question-area > p { font-size: 1.2em; margin: 0; }
 html.movil #number-to-round { font-size: clamp(3.6em, 20vw, 5.4em); margin: 6px 0; line-height: 1.05; }
 html.movil #number-to-round.long-number { font-size: clamp(3em, 15vw, 4.4em); }
 html.movil #rounding-unit { font-size: 1.08em; margin: 2px 0; max-width: 100%; text-align: center; }
-html.movil #feedback-message { flex: 0 0 auto; min-height: 1.5em; line-height: 1.5em; font-size: 1.15em; margin: 0; }
+html.movil #feedback-message { flex: 0 0 auto; min-height: 2.4em; line-height: 1.2; font-size: 1.15em; margin: 0; display: flex; align-items: center; justify-content: center; }
 html.movil #options-container { flex: 1 1 0; min-height: 0; margin: 0; gap: 10px; display: flex; flex-direction: column; }
 html.movil .option-button { flex: 1 1 0; min-height: 0; padding: 0 16px; font-size: 2.1em; max-height: 110px; display: flex; align-items: center; justify-content: center; }
 html.movil #main-menu-button { flex: 0 0 auto; margin: 6px 0 0; padding: 12px; font-size: 1.15em; min-height: 52px; }
@@ -195,3 +195,12 @@ html.movil .op-bloque { margin-top: .5em; }
 html, body, button, .setting-row, .chip-button, .mode-button, .option-button { touch-action: manipulation; }
 html.movil #game-logo { filter: none; will-change: transform, opacity; }
 body:has(.modal[style*="display: flex"]:not(#mode-selection-modal)) #game-logo { animation-play-state: paused; }
+
+/* «Más opciones»: el sitio de las aclaraciones es siempre el de la más larga, así que nada cambia de tamaño al cambiar de dificultad;
+   y el título reserva el sitio del botón de cerrar */
+@media (orientation: portrait) {
+html.movil .op-explica { min-height: 3.3em; }
+html.movil .op-ranking { min-height: 7em; }
+html.movil .panel h2, html.movil #options-area h2 { min-height: 2.3em; display: flex; align-items: center; justify-content: center; margin: 0; }
+html.movil .close-x { width: 46px; height: 46px; top: 10px; right: 10px; }
+}
