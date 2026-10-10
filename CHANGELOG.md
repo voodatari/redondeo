@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## [2.0.1] - 2026-10-10
+- **iPhone / móvil:** el juego y la ventana de explicación aprovechan todo el alto de la pantalla (antes, en iPhone, la tarjeta quedaba pequeña en el centro y la explicación salía ancha y baja). El viewport lleva minimum-scale=1 y, si Safari muestra la página en una pantalla virtual más ancha que el teléfono, se fija el ancho físico (clase html.movil). La ventana de explicación tiene altura explícita (Safari no aplicaba min(640px, 100%)). En el juego, los botones de respuesta y el número son más grandes en pantallas estrechas.
+- **Cuenta atrás:** los números entran con un golpe de escala, sin giro: en iPhone el giro de 180° los mostraba reflejados.
+- Explicación: en el primer paso la respuesta errónea aparece centrada y se desliza a la izquierda cuando aparece la correcta; cabecera de la explicación en una sola línea en móvil.
+
 ## [2.0] - 2026-10-10
 Versión 2: el juego habla. Sustituye a la versión 1 (guardada en las copias de seguridad del proyecto).
 - **Explicaciones animadas y narradas** al fallar (voz Piper en el propio dispositivo, sin servidores): infografía de cinco pasos con controles de pausa, repetir, atrás / adelante (también con puntos y flechas del teclado) y saltar. Se centra en vertical en cada paso y se adapta a pantallas verticales (móvil, tablet): si no cabe, se reduce, nunca se corta.

@@ -1564,10 +1564,10 @@ html.ligero .dialog-overlay { background: rgba(6, 10, 32, 0.78); }
     0%   { transform: perspective(200px) rotateX(-90deg); }
     100% { transform: perspective(200px) rotateX(0); }
 }
-@keyframes count-flip {     /* cuenta atrás */
-    0%   { animation-timing-function: cubic-bezier(.45, .05, .35, 1); opacity: 0; transform: perspective(500px) rotateY(180deg) scale(.7); }
-    70%  { animation-timing-function: cubic-bezier(.45, .05, .35, 1); opacity: 1; transform: perspective(500px) rotateY(-12deg) scale(1.12); }
-    100% { opacity: 1; transform: perspective(500px) rotateY(0) scale(1); }
+@keyframes count-flip {     /* cuenta atrás: entra con un golpe de escala (sin giro: en iPhone el 2, el 3… se veían reflejados) */
+    0%   { animation-timing-function: cubic-bezier(.2, .8, .3, 1); opacity: 0; transform: scale(1.9); }
+    65%  { animation-timing-function: ease-out; opacity: 1; transform: scale(0.92); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes modal-in { from { opacity: 0; transform: translateY(24px) scale(0.94); } to { opacity: 1; transform: none; } }
@@ -1621,3 +1621,33 @@ html.ligero .dialog-overlay { background: rgba(6, 10, 32, 0.78); }
     .rk-meta { display: none; }
     .panel-actions .mode-button { min-width: 0; width: 100%; }
 }
+
+
+/* ==================================================== */
+/*  Móvil: la pantalla de juego ocupa todo el alto       */
+/* ==================================================== */
+@media (max-width: 500px) {
+    body { padding: 10px; min-height: 100vh; min-height: 100dvh; }
+    #game-container:not(.game-content-hidden) {
+        min-height: calc(100vh - 20px); min-height: calc(100dvh - 20px);
+        display: flex; flex-direction: column; justify-content: space-evenly;
+    }
+    #game-container h1 { font-size: 1.9em; }
+    #question-area { min-height: 0; margin-bottom: 0; }
+    #number-to-round { font-size: clamp(3em, 16vw, 4.6em); margin: 12px 0; }
+    #number-to-round.long-number { font-size: clamp(2.4em, 12vw, 3.6em); }
+    #rounding-unit { font-size: 1.05em; }
+    #options-container { gap: 18px; margin-bottom: 0; }
+    .option-button { font-size: 2em; padding: 22px 16px; }
+    #feedback-message { min-height: 1.6em; }
+}
+html.movil #game-container:not(.game-content-hidden) {
+    min-height: calc(100vh - 20px); min-height: calc(100dvh - 20px);
+    display: flex; flex-direction: column; justify-content: space-evenly;
+}
+html.movil body { padding: 10px; min-height: 100dvh; }
+html.movil .container { max-width: none; }
+html.movil #number-to-round { font-size: clamp(3em, 16vw, 4.6em); margin: 12px 0; }
+html.movil #options-container { gap: 18px; margin-bottom: 0; }
+html.movil .option-button { font-size: 2em; padding: 22px 16px; }
+html.movil #question-area { min-height: 0; margin-bottom: 0; }

@@ -178,7 +178,13 @@ window.Infografia = (function () {
     /* una píldora (mal / bien) aparece y late al nombrarse */
     P.pildora = function (cual) {
         var p = this.pildorasEl.querySelector('.' + cual);
+        // la que ya estaba se desliza al sitio que le deja la nueva (así la primera empieza centrada)
+        var otra = this.pildorasEl.querySelector(cual === 'bien' ? '.mal' : '.bien'), x0 = otra && otra.offsetParent ? otra.getBoundingClientRect().left : null;
         p.classList.remove('late'); void p.offsetWidth; p.classList.add('ver');
+        if (x0 != null && !this.rapido && otra.animate) {
+            var dx = (x0 - otra.getBoundingClientRect().left) / (parseFloat(this.lienzo.style.zoom) || 1);
+            if (Math.abs(dx) > 0.5) otra.animate([{ transform: 'translateX(' + dx + 'px)' }, { transform: 'none' }], { duration: 450, easing: 'ease-out' });
+        }
         if (!this.rapido) p.classList.add('late');
     };
     /* Lo que aún no ha salido no ocupa sitio, así que en cada paso lo visible queda centrado en vertical. Cuando aparece
