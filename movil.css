@@ -204,3 +204,10 @@ html.movil .op-ranking { min-height: 7em; }
 html.movil .panel h2, html.movil #options-area h2 { min-height: 2.3em; display: flex; align-items: center; justify-content: center; margin: 0; }
 html.movil .close-x { width: 46px; height: 46px; top: 10px; right: 10px; }
 }
+
+/* pegatina de racha: dentro de la tarjeta (antes sobresalía por la derecha y se cortaba) */
+@media (orientation: portrait) {
+html.movil #streak-badge { top: -4px; right: 8px; padding: 3px 10px; font-size: .85em; box-shadow: 0 3px 0 #c2410c, 0 6px 14px rgba(234, 88, 12, 0.4); }
+html.movil #game-container:not(.game-content-hidden) { padding-top: 22px; }
+}
+@media (orientation: portrait) { html.movil .modal input[type="text"], html.movil .modal input:not([type]) { font-size: 1.1em; padding: .7em .8em; } }

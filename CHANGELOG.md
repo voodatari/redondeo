@@ -1,5 +1,8 @@
 # Historial de cambios
 
+## [2.0.8] - 2026-10-10
+- Móvil: la pegatina de «Racha» queda dentro de la tarjeta (se cortaba por el borde derecho); el campo del nombre ya no corta el texto «(opcional)».
+
 ## [2.0.7] - 2026-10-10
 - **«¡Correcto!» se quedaba al pasar a la pregunta siguiente** (también en escritorio): una regla con !important impedía ocultarlo. Ya se oculta.
 - Móvil: «¡Correcto!» centrado verticalmente entre la unidad y la primera respuesta.
